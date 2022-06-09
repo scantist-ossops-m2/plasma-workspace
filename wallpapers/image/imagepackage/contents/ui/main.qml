@@ -177,7 +177,8 @@ QQC2.StackView {
     }
 
     replaceEnter: Transition {
-        OpacityAnimator {
+        NumberAnimation {
+            property: "opacity"
             from: 0
             to: 1
             duration: wallpaper.configuration.TransitionAnimationDuration
