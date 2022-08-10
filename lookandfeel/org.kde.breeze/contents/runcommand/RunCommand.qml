@@ -12,7 +12,7 @@ import org.kde.kquickcontrolsaddons 2.0  // For KCMShell
 import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 3.0 as PlasmaComponents3
 import org.kde.plasma.extras 2.0 as PlasmaExtras
-import org.kde.milou 0.1 as Milou
+import org.kde.milou 0.3 as Milou
 
 ColumnLayout {
     id: root
@@ -63,6 +63,44 @@ ColumnLayout {
             }
         }
     }
+    
+    function getCategoryName(i) {
+        return results.model.data(results.model.index(i, 0), Milou.ResultsModel.CategoryRole)
+    }
+
+    // Moving up/down categories, see 
+    function go_up_category(event) {
+        event.accepted = true;
+        const originalCategory = getCategoryName(results.currentIndex + (queryField.focus ? 0 : 1));
+        let idx = results.currentIndex;
+        while (originalCategory === getCategoryName(idx)
+            || getCategoryName(idx) === getCategoryName(idx - 1)
+        ) {
+            idx--;
+            if (idx < 0) {
+                idx = results.count -1;
+                break;
+            }
+        } 
+        results.currentIndex = idx;
+        queryField.focus && results.forceActiveFocus();
+    }
+
+    function go_down_category(event) {
+        event.accepted = true;
+        const originalCategory = getCategoryName(results.currentIndex + (queryField.focus ? 0 : -1));
+        let idx = results.currentIndex;
+        while (originalCategory === getCategoryName(idx)) {
+            idx++;
+            if (idx === results.count) {
+                idx = 0;
+                break;
+            }
+        } 
+        results.currentIndex = idx;
+        queryField.focus && results.forceActiveFocus();
+    }
+
 
     RowLayout {
         Layout.alignment: Qt.AlignTop
@@ -174,8 +212,8 @@ ColumnLayout {
                     focusCurrentListView()
                 }
             }
-            Keys.onUpPressed: move_up()
-            Keys.onDownPressed: move_down()
+            Keys.onUpPressed: event.modifiers & Qt.ControlModifier ? go_up_category(event) : move_up()
+            Keys.onDownPressed: event.modifiers & Qt.ControlModifier ? go_down_category(event) : move_down()
             function closeOrRun(event) {
                 // Close KRunner if no text was typed and enter was pressed, FEATURE: 211225
                 if (!root.query) {
@@ -280,6 +318,16 @@ ColumnLayout {
                 }
             }
 
+            Keys.onDownPressed: {
+                if (event.modifiers & Qt.ControlModifier) {
+                    go_down_category(event)
+                }
+            }
+            Keys.onUpPressed: {
+                if (event.modifiers & Qt.ControlModifier) {
+                    go_up_category(event)
+                }
+            }
             Keys.onEscapePressed: {
                 runnerWindow.visible = false
             }
