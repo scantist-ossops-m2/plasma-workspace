@@ -71,15 +71,18 @@ ColumnLayout {
     // Moving up/down categories, see 
     function go_up_category(event) {
         event.accepted = true;
-        const originalCategory = getCategoryName(results.currentIndex + (queryField.focus ? 0 : 1));
+        const originalCategory = getCategoryName(results.currentIndex);
+        const originalIdx = results.currentIndex;;
         let idx = results.currentIndex;
         while (originalCategory === getCategoryName(idx)
             || getCategoryName(idx) === getCategoryName(idx - 1)
         ) {
             idx--;
-            if (idx < 0) {
+            if (idx < 0) { // IF we are at the top and want to go to the previous category, we have to check from the bottom
                 idx = results.count -1;
-                break;
+            }
+            if (idx === originalIdx) {
+                return; // Avoid endless loop if we only have one category
             }
         } 
         results.currentIndex = idx;
@@ -88,12 +91,12 @@ ColumnLayout {
 
     function go_down_category(event) {
         event.accepted = true;
-        const originalCategory = getCategoryName(results.currentIndex + (queryField.focus ? 0 : -1));
+        const originalCategory = getCategoryName(results.currentIndex);
         let idx = results.currentIndex;
         while (originalCategory === getCategoryName(idx)) {
             idx++;
             if (idx === results.count) {
-                idx = 0;
+                idx = 0; // The first item is always the first item if it's category'
                 break;
             }
         } 
@@ -318,16 +321,8 @@ ColumnLayout {
                 }
             }
 
-            Keys.onDownPressed: {
-                if (event.modifiers & Qt.ControlModifier) {
-                    go_down_category(event)
-                }
-            }
-            Keys.onUpPressed: {
-                if (event.modifiers & Qt.ControlModifier) {
-                    go_up_category(event)
-                }
-            }
+            Keys.onUpPressed: event.modifiers & Qt.ControlModifier ? go_up_category(event) : decrementCurrentIndex()
+            Keys.onDownPressed: event.modifiers & Qt.ControlModifier ? go_down_category(event) : incrementCurrentIndex()
             Keys.onEscapePressed: {
                 runnerWindow.visible = false
             }
