@@ -150,7 +150,7 @@ Item {
         to: 1440 // 24h in min
         interactive: root.interactive
         value: -1
-        pointerLabel: prettyTime(value)
+        pointerLabel: i18nc("@info night color starts to take effect", "Color starts changing at %1", prettyTime(value))
         handleToolTip: "When Night Color starts to take effect"
         stepSize: 1
         live: true
@@ -159,6 +159,7 @@ Item {
             var minutes = value%60;
             kcm.nightColorSettings.eveningBeginFixed = String(hours).padStart(2, "0") + String(minutes).padStart(2, "0")
         }
+        pointerOnBottom: false
         width: sliderWidth
     }
     HandleOnlySlider {
@@ -172,10 +173,11 @@ Item {
             var minutes = value%60;
             kcm.nightColorSettings.morningBeginFixed = String(hours).padStart(2, "0") + String(minutes).padStart(2, "0")
         }
-        pointerLabel: prettyTime(value)
+        pointerLabel: i18nc("@info night color starts to end", "Color starts changing back at %1", prettyTime(value))
         handleToolTip: "When Night Color starts ending"
         stepSize: 1
         live: true
+        pointerOnBottom: false
         width: sliderWidth
     }
     HandleOnlySlider {
@@ -184,16 +186,13 @@ Item {
         to: 1440 // 24h in min
         interactive: root.interactive
         minDrag: (value - startTimeSlider.value >= 0) ? startTimeSlider.visualPosition : 0.0
-        pointerLabel: {
-            return prettyTime(value)
-        }
+        pointerLabel: i18nc("@info night color has fully taken effect", "Color fully changed at %1", prettyTime(value))
         onUserChangedValue: {
             startFinTimeSlider.value = value
         }
         handleToolTip: "When Night Color is completely applied"
         stepSize: 1
         live: true
-        pointerOnBottom: false
         width: sliderWidth
     }
     HandleOnlySlider {
@@ -202,16 +201,13 @@ Item {
         to: 1440 // 24h in min
         interactive: root.interactive
         minDrag: (value - endTimeSlider.value >= 0) ? endTimeSlider.visualPosition : 0.0
-        pointerLabel: {
-            return prettyTime(value)
-        }
+        pointerLabel: i18nc("@info night color has fully taken effect", "Color fully changed back at %1", prettyTime(value))
         onUserChangedValue: {
             endFinTimeSlider.value = value
         }
         handleToolTip: "When Night Color completely ends"
         stepSize: 1
         live: true
-        pointerOnBottom: false
         width: sliderWidth
     }
 
