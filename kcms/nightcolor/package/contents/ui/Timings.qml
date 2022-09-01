@@ -218,6 +218,9 @@ Item {
         radius: 5
         opacity: 0.7
 
+        border.color: Qt.rgba(0, 0, 0, 0.5)
+        border.width: 1
+
         LinearGradient {
             anchors.fill: parent
             source: visualizer
