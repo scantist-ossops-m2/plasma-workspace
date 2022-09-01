@@ -314,101 +314,6 @@ KCM.SimpleKCM {
                 wrapMode: Text.Wrap
                 text: i18n("Latitude: %1°   Longitude: %2°", Math.round(locator.latitude * 100)/100, Math.round(locator.longitude * 100)/100)
             }
-
-            // Show time entry fields in manual timings mode
-            TimeField {
-                id: evenBeginManField
-                // Match combobox width
-                Layout.minimumWidth: modeSwitcher.width
-                Layout.maximumWidth: modeSwitcher.width
-                visible: kcm.nightColorSettings.mode === NightColorMode.Timings
-                Kirigami.FormData.label: i18n("Begin night color at:")
-                backend: kcm.nightColorSettings.eveningBeginFixed
-                onBackendChanged: {
-                    kcm.nightColorSettings.eveningBeginFixed = backend;
-                }
-
-                KCM.SettingStateBinding {
-                    configObject: kcm.nightColorSettings
-                    settingName: "EveningBeginFixed"
-                    extraEnabledConditions: kcm.nightColorSettings.active && kcm.nightColorSettings.mode === NightColorMode.Timings
-                }
-
-                QQC2.ToolTip {
-                    text: i18n("Input format: HH:MM")
-                }
-            }
-
-            TimeField {
-                id: mornBeginManField
-                // Match combobox width
-                Layout.minimumWidth: modeSwitcher.width
-                Layout.maximumWidth: modeSwitcher.width
-                visible: kcm.nightColorSettings.mode === NightColorMode.Timings
-                Kirigami.FormData.label: i18n("Begin day color at:")
-                backend: kcm.nightColorSettings.morningBeginFixed
-                onBackendChanged: {
-                    kcm.nightColorSettings.morningBeginFixed = backend;
-                }
-
-                KCM.SettingStateBinding {
-                    configObject: kcm.nightColorSettings
-                    settingName: "MorningBeginFixed"
-                    extraEnabledConditions: kcm.nightColorSettings.active && kcm.nightColorSettings.mode === NightColorMode.Timings
-                }
-
-                QQC2.ToolTip {
-                    text: i18n("Input format: HH:MM")
-                }
-            }
-
-            QQC2.SpinBox {
-                id: transTimeField
-                visible: kcm.nightColorSettings.mode === NightColorMode.Timings
-                // Match width of combobox and input fields
-                Layout.minimumWidth: modeSwitcher.width
-                Kirigami.FormData.label: i18n("Transition duration:")
-                from: 1
-                to: 600 // less than 12 hours (in minutes: 720)
-                value: kcm.nightColorSettings.transitionTime
-                editable: true
-                onValueModified: {
-                    kcm.nightColorSettings.transitionTime = value;
-                }
-                textFromValue: function(value, locale) {
-                    return i18np("%1 minute", "%1 minutes", value)
-                }
-                valueFromText: function(text, locale) {
-                    return parseInt(text);
-                }
-
-                KCM.SettingStateBinding {
-                    configObject: kcm.nightColorSettings
-                    settingName: "TransitionTime"
-                    extraEnabledConditions: kcm.nightColorSettings.active
-                }
-
-                QQC2.ToolTip {
-                    text: i18n("Input minutes - min. 1, max. 600")
-                }
-            }
-
-            QQC2.Label {
-                id: manualTimingsError
-                visible: {
-                    var day = 86400000;
-                    var trTime = transTimeField.value * 60 * 1000;
-                    var mor = mornBeginManField.getNormedDate();
-                    var eve = evenBeginManField.getNormedDate();
-
-                    var diffMorEve = eve > mor ? eve - mor : mor - eve;
-                    var diffMin = Math.min(diffMorEve, day - diffMorEve);
-
-                    return diffMin <= trTime;
-                }
-                font.italic: true
-                text: i18n("Error: Transition time overlaps.")
-            }
         }
         
         // Show location chooser in manual location mode
@@ -420,10 +325,11 @@ KCM.SimpleKCM {
 
         // Show start/end times in automatic and manual location modes
         Item {
-            visible: kcm.nightColorSettings.mode === NightColorMode.Automatic || kcm.nightColorSettings.mode === NightColorMode.Location
-                && kcm.nightColorSettings.active
-            Layout.topMargin: Kirigami.Units.largeSpacing * 4
+            visible: kcm.nightColorSettings.active
+            Layout.topMargin: Kirigami.Units.largeSpacing * 5
             Layout.alignment: Qt.AlignHCenter
+            implicitWidth: 500
+            implicitHeight: Kirigami.Units.gridUnit * 2
 
             Kirigami.LoadingPlaceholder {
                 visible: kcm.nightColorSettings.mode === NightColorMode.Automatic && (!locator || !root.doneLocating)
@@ -431,16 +337,11 @@ KCM.SimpleKCM {
                 anchors.centerIn: parent
             }
 
-            TimingsView {
-                id: timings
-                visible: kcm.nightColorSettings.mode === NightColorMode.Location ||
-                    (kcm.nightColorSettings.mode === NightColorMode.Automatic && root.doneLocating)
-                anchors.centerIn: parent
-                enabled: kcm.nightColorSettings.active
-                latitude: kcm.nightColorSettings.mode === NightColorMode.Automatic
-                    && (locator !== undefined) ? locator.latitude : kcm.nightColorSettings.latitudeFixed
-                longitude: kcm.nightColorSettings.mode === NightColorMode.Automatic
-                    && (locator !== undefined) ? locator.longitude : kcm.nightColorSettings.longitudeFixed
+            Timings {
+                sliderWidth: 500
+                visible: (kcm.nightColorSettings.mode === NightColorMode.Timings)
+                    || (kcm.nightColorSettings.mode === NightColorMode.Location)
+                    || ((kcm.nightColorSettings.mode === NightColorMode.Automatic) && locator && root.doneLocating)
             }
         }
     }
