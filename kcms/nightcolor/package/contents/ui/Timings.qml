@@ -300,7 +300,6 @@ Item {
         width: sliderWidth
         height: 10
         radius: 5
-        opacity: 0.7
 
         border.color: Qt.rgba(0, 0, 0, 0.5)
         border.width: 1
