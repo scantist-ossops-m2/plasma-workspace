@@ -103,7 +103,7 @@ QQC2.Slider {
             }
         }
 
-        Text {
+        QQC2.Label {
             id: lbl
             text: pointerLabel
             anchors.top: pointerOnBottom ? pointer.bottom : undefined
