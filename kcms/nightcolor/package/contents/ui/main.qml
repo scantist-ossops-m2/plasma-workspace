@@ -323,12 +323,17 @@ KCM.SimpleKCM {
             enabled: activator.checked
         }
 
-        // Show start/end times in automatic and manual location modes
+        Item { implicitHeight: Kirigami.Units.largeSpacing }
+
+        // Timings viewer/editor
         Item {
             visible: kcm.nightColorSettings.active
             Layout.topMargin: Kirigami.Units.largeSpacing * 5
             Layout.alignment: Qt.AlignHCenter
-            implicitWidth: 500
+            // we need exact numbers here since the slider has step: 1 and has 1440 possible values
+            // so consistent change on drag needs the width to be an integer factor or multiple of 1440
+            // 720 offers a dragging "step" of 2, while 480 offers a "step" of 3
+            implicitWidth: root.width > 720 ? 720 : 480
             implicitHeight: Kirigami.Units.gridUnit * 2
 
             Kirigami.LoadingPlaceholder {
@@ -338,7 +343,7 @@ KCM.SimpleKCM {
             }
 
             Timings {
-                sliderWidth: 500
+                sliderWidth: root.width > 720 ? 720 : 480
                 visible: (kcm.nightColorSettings.mode === NightColorMode.Timings)
                     || (kcm.nightColorSettings.mode === NightColorMode.Location)
                     || ((kcm.nightColorSettings.mode === NightColorMode.Automatic) && locator && root.doneLocating)

@@ -229,6 +229,13 @@ Item {
             var minutes = value%60;
             kcm.nightColorSettings.eveningBeginFixed = String(hours).padStart(2, "0") + String(minutes).padStart(2, "0")
         }
+        overlapping: {
+            if (endTimeSlider.visualPosition < startTimeSlider.visualPosition) {
+                return (endTimeSlider.handle.x + endTimeSlider.handle.lblWidth/2) > (startTimeSlider.handle.x - startTimeSlider.handle.lblWidth/2)
+            } else {
+                return (startTimeSlider.handle.x + startTimeSlider.handle.lblWidth/2) > (endTimeSlider.handle.x - endTimeSlider.handle.lblWidth/2)
+            }
+        }
         pointerOnBottom: false
         width: sliderWidth
     }
@@ -259,6 +266,13 @@ Item {
         pointerLabel: i18nc("@info night color has fully taken effect", "Color fully changed at %1", prettyTime(value))
         onUserChangedValue: {
             startFinTimeSlider.value = value
+        }
+        overlapping: {
+            if (endFinTimeSlider.visualPosition < startFinTimeSlider.visualPosition) {
+                return (endFinTimeSlider.handle.x + endFinTimeSlider.handle.lblWidth/2) > (startFinTimeSlider.handle.x - startFinTimeSlider.handle.lblWidth/2)
+            } else {
+                return (startFinTimeSlider.handle.x + startFinTimeSlider.handle.lblWidth/2) > (endFinTimeSlider.handle.x - endFinTimeSlider.handle.lblWidth/2)
+            }
         }
         handleToolTip: "When Night Color is completely applied"
         stepSize: 1

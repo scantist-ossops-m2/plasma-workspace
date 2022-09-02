@@ -20,7 +20,8 @@ QQC2.Slider {
     property string pointerLabel
     property string handleToolTip
     property bool pointerOnBottom: true
-    property bool interactive
+    property bool interactive: true
+    property bool overlapping: false
 
     property real minDrag: 0.0
     property real maxDrag: 1.0
@@ -32,7 +33,6 @@ QQC2.Slider {
     }
 
     function changeValue(value) {
-        console.log(value)
         handle.changeValue(value)
     }
 
@@ -50,6 +50,8 @@ QQC2.Slider {
 
     handle: Item {
         y: (pointerOnBottom ? 10 : -10)
+
+        property alias lblWidth: lbl.width
 
         x: control.leftPadding + control.visualPosition * (control.availableWidth) - pointer.width/2
 
@@ -89,6 +91,19 @@ QQC2.Slider {
             anchors.top: pointerOnBottom ? pointer.bottom : undefined
             anchors.bottom: pointerOnBottom ? undefined : pointer.top
             x: -width/2 + pointer.width/2
+            Binding {
+                when: control.overlapping
+                target: lbl
+                property: pointerOnBottom ? "anchors.topMargin" : "anchors.bottomMargin"
+                value: tm.height
+                restoreMode: Binding.RestoreBindingOrValue
+            }
+            Behavior on anchors.bottomMargin {
+                NumberAnimation { easing.type: Easing.OutCubic; duration: Kirigami.Units.shortDuration }
+            }
+            Behavior on anchors.topMargin {
+                NumberAnimation { easing.type: Easing.OutCubic; duration: Kirigami.Units.shortDuration }
+            }
             TextMetrics {
                 id: tm
                 font: lbl.font
