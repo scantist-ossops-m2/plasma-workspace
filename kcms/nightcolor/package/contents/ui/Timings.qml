@@ -18,6 +18,8 @@ Item {
     id: root
     property int sliderWidth: 500
 
+    readonly property bool rtl: (Qt.application as Application).layoutDirection
+
     property bool interactive: kcm.nightColorSettings.mode === NightColorMode.Timings
     property bool sameTransitionDurations: !(kcm.nightColorSettings.mode === NightColorMode.Automatic || kcm.nightColorSettings.mode === NightColorMode.Location)
 
@@ -262,7 +264,8 @@ Item {
         from: 0
         to: 1440 // 24h in min
         interactive: root.interactive
-        minDrag: (value - startTimeSlider.value >= 0) ? startTimeSlider.visualPosition : 0.0
+        minDrag: rtl ? 0.0 : ((value - startTimeSlider.value >= 0) ? startTimeSlider.visualPosition : 0.0)
+        maxDrag: rtl ? ((value - startTimeSlider.value >= 0) ? startTimeSlider.visualPosition : 0.0) : 1.0
         pointerLabel: i18nc("@info night color has fully taken effect", "Color fully changed at %1", prettyTime(value))
         onUserChangedValue: {
             startFinTimeSlider.value = value
@@ -284,7 +287,8 @@ Item {
         from: 0
         to: 1440 // 24h in min
         interactive: root.interactive
-        minDrag: (value - endTimeSlider.value >= 0) ? endTimeSlider.visualPosition : 0.0
+        minDrag: rtl ? 0.0 : ((value - endTimeSlider.value >= 0) ? endTimeSlider.visualPosition : 0.0)
+        maxDrag: rtl ? ((value - endTimeSlider.value >= 0) ? endTimeSlider.visualPosition : 0.0) : 1.0
         pointerLabel: i18nc("@info night color has fully taken effect", "Color fully changed back at %1", prettyTime(value))
         onUserChangedValue: {
             endFinTimeSlider.value = value
@@ -311,10 +315,10 @@ Item {
             end: Qt.point(sliderWidth, 0)
             gradient: Gradient {
                 GradientStop { position: endTimeSlider.visualPosition; color: night }
-                GradientStop { position: endFinTimeSlider.visualPosition + 0.01; color: day }
+                GradientStop { position: endFinTimeSlider.visualPosition + (rtl ? -0.01 : +0.01); color: day }
                 GradientStop { position: startTimeSlider.visualPosition; color: day }
-                GradientStop { position: startFinTimeSlider.visualPosition + 0.01; color: night }
-                GradientStop { position: 1.0; color: (startTimeSlider.visualPosition > endTimeSlider.visualPosition) ? night : day }
+                GradientStop { position: startFinTimeSlider.visualPosition + (rtl ? -0.01 : +0.01); color: night }
+                GradientStop { position: 1.0; color: (startTimeSlider.visualPosition > endTimeSlider.visualPosition) ? (rtl ? day : night) : (rtl ? night : day) }
             }
         }
     }

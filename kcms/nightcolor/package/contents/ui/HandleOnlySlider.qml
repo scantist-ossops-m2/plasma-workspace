@@ -17,6 +17,8 @@ QQC2.Slider {
     id: control
     implicitHeight: 5
 
+    readonly property bool rtl: (Qt.application as Application).layoutDirection
+
     property string pointerLabel
     property string handleToolTip
     property bool pointerOnBottom: true
@@ -25,6 +27,8 @@ QQC2.Slider {
 
     property real minDrag: 0.0
     property real maxDrag: 1.0
+
+    LayoutMirroring.enabled: rtl
 
     MouseArea {
         // absorb clicks on slider
@@ -48,6 +52,14 @@ QQC2.Slider {
 
     signal userChangedValue(value: int)
 
+    function pos(value) {
+        return control.rtl ? 1-(value/(to-from)) : (value/(to-from))
+    }
+
+    function dragLimit(lim) {
+        return control.rtl ? 1-lim : lim
+    }
+
     handle: Item {
         y: (pointerOnBottom ? 10 : -10)
 
@@ -56,11 +68,17 @@ QQC2.Slider {
         x: control.leftPadding + control.visualPosition * (control.availableWidth) - pointer.width/2
 
         function changeValue(value) {
-            x = control.leftPadding + (value/(to-from)) * (control.availableWidth) - pointer.width/2
+            x = control.leftPadding + pos(value) * (control.availableWidth) - pointer.width/2
         }
+
+        property real minDragX: control.leftPadding - (pointer.width / 2) + control.minDrag*control.availableWidth
+        property real maxDragX: control.leftPadding + control.maxDrag*control.availableWidth - pointer.width/2
 
         onXChanged: {
             var v = control.valueAt((control.leftPadding + x + pointer.width/2)/(control.leftPadding + control.availableWidth));
+            if (control.rtl) {
+                v = to - v;
+            }
             control.userChangedValue(v)
         }
 
@@ -80,8 +98,8 @@ QQC2.Slider {
                 anchors.fill: parent
                 drag.target: control.interactive ? handle : undefined
                 drag.axis: Drag.XAxis
-                drag.minimumX: control.leftPadding - pointer.width / 2 + control.minDrag*control.availableWidth
-                drag.maximumX: control.leftPadding + control.maxDrag*control.availableWidth - pointer.width/2
+                drag.minimumX: handle.minDragX
+                drag.maximumX: handle.maxDragX
             }
         }
 
@@ -99,10 +117,10 @@ QQC2.Slider {
                 restoreMode: Binding.RestoreBindingOrValue
             }
             Behavior on anchors.bottomMargin {
-                NumberAnimation { easing.type: Easing.OutCubic; duration: Kirigami.Units.shortDuration }
+                NumberAnimation { easing.type: Easing.InOutCubic; duration: Kirigami.Units.shortDuration }
             }
             Behavior on anchors.topMargin {
-                NumberAnimation { easing.type: Easing.OutCubic; duration: Kirigami.Units.shortDuration }
+                NumberAnimation { easing.type: Easing.InOutCubic; duration: Kirigami.Units.shortDuration }
             }
             TextMetrics {
                 id: tm
@@ -120,8 +138,8 @@ QQC2.Slider {
                 anchors.fill: parent
                 drag.target: control.interactive ? handle : undefined
                 drag.axis: Drag.XAxis
-                drag.minimumX: control.leftPadding - pointer.width / 2 + control.minDrag*control.availableWidth
-                drag.maximumX: control.leftPadding + control.maxDrag*control.availableWidth - pointer.width/2
+                drag.minimumX: handle.minDragX
+                drag.maximumX: handle.maxDragX
             }
         }
     }
