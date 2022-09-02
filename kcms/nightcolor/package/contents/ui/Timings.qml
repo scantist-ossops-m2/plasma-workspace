@@ -26,6 +26,12 @@ Item {
     implicitHeight: Kirigami.Units.gridUnit * 2
     implicitWidth: sliderWidth
 
+    function isThemeDark() {
+        var bg = Kirigami.Theme.backgroundColor;
+        var gray = (bg.r + bg.g + bg.b)/3;
+        return (gray < 192);
+    }
+
     function colorForTemp(temp) {
         // from KWin colortemperature.h
         /**
@@ -94,7 +100,11 @@ Item {
             [1.00000000, 1.00000000, 1.00000000]      /* 6500K */
         ]
         var rgb = temp2RGB[(temp - 1000)/100];
-        return Qt.rgba(rgb[0], rgb[1], rgb[2], 1);
+        var col = Qt.rgba(rgb[0], rgb[1], rgb[2], 1);
+        if (isThemeDark() && col.hsvSaturation < 0.7) {
+            col.hsvSaturation += 0.3;
+        }
+        return col;
     }
 
     readonly property color day: colorForTemp(kcm.nightColorSettings.dayTemperature || 6500)
