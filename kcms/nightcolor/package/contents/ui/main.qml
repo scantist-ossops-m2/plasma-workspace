@@ -337,7 +337,7 @@ KCM.SimpleKCM {
             implicitHeight: Kirigami.Units.gridUnit * 2
 
             Kirigami.LoadingPlaceholder {
-                visible: kcm.nightColorSettings.mode === NightColorMode.Automatic && (!locator || !root.doneLocating)
+                visible: kcm.nightColorSettings.active && kcm.nightColorSettings.mode === NightColorMode.Automatic && (!locator || !root.doneLocating)
                 text: i18nc("@info:placeholder", "Locating…")
                 anchors.centerIn: parent
             }
