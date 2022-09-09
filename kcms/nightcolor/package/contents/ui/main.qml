@@ -85,21 +85,81 @@ KCM.SimpleKCM {
         Kirigami.FormLayout {
             id: parentLayout
 
-            QQC2.CheckBox {
-                id: activator
-                text: i18n("Activate blue light filter")
-                checked: kcm.nightColorSettings.active
-                onCheckedChanged: kcm.nightColorSettings.active = checked
-
-                KCM.SettingStateBinding {
-                    configObject: kcm.nightColorSettings
-                    settingName: "Active"
-                    extraEnabledConditions: true//cA.nightColorAvailable
+            QQC2.ComboBox {
+                id: modeSwitcher
+                // Work around https://bugs.kde.org/show_bug.cgi?id=403153
+                Layout.minimumWidth: Kirigami.Units.gridUnit * 17
+                Kirigami.FormData.label: i18n("Switching times:")
+                model: [
+                    i18n("Always off"),  // This is not actually a Mode, but represents Night Color being disabled
+                    i18n("Sunset and sunrise at current location"),
+                    i18n("Sunset and sunrise at manual location"),
+                    i18n("Custom times"),
+                    i18n("Always on night color")
+                ]
+                Connections {
+                    target: kcm.nightColorSettings
+                    function onActiveChanged() {
+                        if (!kcm.nightColorSettings.active) {
+                            modeSwitcher.currentIndex = 0;
+                        } else {
+                            modeSwitcher.currentIndex = kcm.nightColorSettings.mode + 1;
+                        }
+                    }
+                    function onModeChanged() {
+                        if (kcm.nightColorSettings.active) {
+                            modeSwitcher.currentIndex = kcm.nightColorSettings.mode + 1;
+                        }
+                    }
                 }
-                KCM.SettingHighlighter {
-                    highlight: true
+                onCurrentIndexChanged: {
+                    kcm.nightColorSettings.active = (currentIndex !== 0);
+                    if (currentIndex !== 0) {
+                        kcm.nightColorSettings.mode = currentIndex - 1;
+                    }
+                    if (currentIndex - 1 == NightColorMode.Automatic && kcm.nightColorSettings.active) {
+                        startLocator();
+                    } else {
+                        endLocator();
+                    }
                 }
             }
+
+            // Inform about geolocation access in auto mode
+
+            // The system settings window likes to take over
+            // the cursor with a plain label. The TextEdit
+            // 'takes priority' over the system settings
+            // window trying to eat the mouse, allowing
+            // us to use the HoverHandler boilerplate for
+            // proper link handling
+            TextEdit {
+                Layout.maximumWidth: modeSwitcher.width
+
+                visible: modeSwitcher.currentIndex - 1 === NightColorMode.Automatic && kcm.nightColorSettings.active
+                enabled: kcm.nightColorSettings.active
+
+                textFormat: TextEdit.RichText
+                wrapMode: Text.Wrap
+                readOnly: true
+
+                color: Kirigami.Theme.textColor
+                selectedTextColor: Kirigami.Theme.highlightedTextColor
+                selectionColor: Kirigami.Theme.highlightColor
+
+                text: xi18nc("@info", "The device's location will be periodically updated using GPS (if available), or by sending network information to <link url='https://location.services.mozilla.com'>Mozilla Location Service</link>.")
+                font: Kirigami.Theme.smallFont
+
+                onLinkActivated: (url) => Qt.openUrlExternally(url)
+
+                HoverHandler {
+                    acceptedButtons: Qt.NoButton
+                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                }
+            }
+
+            // Workaround for Layout.margins not working in Kirigami FormLayout (bug 434625)
+            Item { implicitHeight: Kirigami.Units.largeSpacing }
 
             Item {
                 Kirigami.FormData.isSection: true
@@ -241,76 +301,11 @@ KCM.SimpleKCM {
                 ]
             }
 
-            QQC2.ComboBox {
-                id: modeSwitcher
-                // Work around https://bugs.kde.org/show_bug.cgi?id=403153
-                Layout.minimumWidth: Kirigami.Units.gridUnit * 17
-                Kirigami.FormData.label: i18n("Switching times:")
-                enabled: activator.checked
-                model: [
-                    i18n("Sunset and sunrise at current location"),
-                    i18n("Sunset and sunrise at manual location"),
-                    i18n("Custom times"),
-                    i18n("Always on night color")
-                ]
-                currentIndex: kcm.nightColorSettings.mode
-                onCurrentIndexChanged: {
-                    kcm.nightColorSettings.mode = currentIndex;
-                    if (currentIndex == NightColorMode.Automatic && kcm.nightColorSettings.active) {
-                        startLocator();
-                    } else {
-                        endLocator();
-                    }
-                }
-
-                KCM.SettingStateBinding {
-                    configObject: kcm.nightColorSettings
-                    settingName: "Mode"
-                    extraEnabledConditions: kcm.nightColorSettings.active
-                }
-            }
-
-            // Inform about geolocation access in auto mode
-
-            // The system settings window likes to take over
-            // the cursor with a plain label. The TextEdit
-            // 'takes priority' over the system settings
-            // window trying to eat the mouse, allowing
-            // us to use the HoverHandler boilerplate for
-            // proper link handling
-            TextEdit {
-                Layout.maximumWidth: modeSwitcher.width
-
-                visible: modeSwitcher.currentIndex === NightColorMode.Automatic && kcm.nightColorSettings.active
-                enabled: activator.checked
-
-                textFormat: TextEdit.RichText
-                wrapMode: Text.Wrap
-                readOnly: true
-
-                color: Kirigami.Theme.textColor
-                selectedTextColor: Kirigami.Theme.highlightedTextColor
-                selectionColor: Kirigami.Theme.highlightColor
-
-                text: xi18nc("@info", "The device's location will be periodically updated using GPS (if available), or by sending network information to <link url='https://location.services.mozilla.com'>Mozilla Location Service</link>.")
-                font: Kirigami.Theme.smallFont
-
-                onLinkActivated: (url) => Qt.openUrlExternally(url)
-
-                HoverHandler {
-                    acceptedButtons: Qt.NoButton
-                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-                }
-            }
-
-            // Workaround for Layout.margins not working in Kirigami FormLayout (bug 434625)
-            Item { implicitHeight: Kirigami.Units.largeSpacing }
-
             // Show current location in auto mode
             QQC2.Label {
                 visible: kcm.nightColorSettings.mode === NightColorMode.Automatic && kcm.nightColorSettings.active
                     && root.doneLocating
-                enabled: activator.checked
+                enabled: kcm.nightColorSettings.active
                 wrapMode: Text.Wrap
                 text: i18n("Latitude: %1°   Longitude: %2°", Math.round(locator.latitude * 100)/100, Math.round(locator.longitude * 100)/100)
             }
@@ -318,9 +313,9 @@ KCM.SimpleKCM {
         
         // Show location chooser in manual location mode
         LocationsFixedView {
-            visible: kcm.nightColorSettings.mode === NightColorMode.Location
+            visible: kcm.nightColorSettings.mode === NightColorMode.Location && kcm.nightColorSettings.active
             Layout.alignment: Qt.AlignHCenter
-            enabled: activator.checked
+            enabled: kcm.nightColorSettings.active
         }
 
         Item { implicitHeight: Kirigami.Units.largeSpacing }
