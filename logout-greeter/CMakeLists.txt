@@ -14,6 +14,8 @@ target_link_libraries(ksmserver-logout-greeter
     Qt::Widgets
     Qt::Quick
     Qt::DBus
+    Qt::WaylandClient
+    Qt::WaylandClientPrivate
     KF5::I18n
     KF5::Package
     KF5::QuickAddons
@@ -21,12 +23,23 @@ target_link_libraries(ksmserver-logout-greeter
     KF5::ConfigCore
     X11::X11
     LayerShellQt::Interface
+    Wayland::Client
 )
 if (QT_MAJOR_VERSION EQUAL "5")
+    ecm_add_qtwayland_client_protocol(ksmserver-logout-greeter
+        PROTOCOL ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-lockscreen-overlay-v1.xml
+        BASENAME kde-lockscreen-overlay-v1
+    )
+    
     target_link_libraries(ksmserver-logout-greeter Qt::X11Extras)
 else()
+    qt6_generate_wayland_protocol_client_sources(ksmserver-logout-greeter FILES
+        ${PLASMA_WAYLAND_PROTOCOLS_DIR}/kde-lockscreen-overlay-v1.xml
+    )
+        
     target_link_libraries(ksmserver-logout-greeter Qt::GuiPrivate)
 endif()
+
 install(TARGETS ksmserver-logout-greeter DESTINATION ${KDE_INSTALL_LIBEXECDIR})
 kdbusaddons_generate_dbus_service_file(ksmserver-logout-greeter org.kde.LogoutPrompt ${KDE_INSTALL_FULL_LIBEXECDIR})
 

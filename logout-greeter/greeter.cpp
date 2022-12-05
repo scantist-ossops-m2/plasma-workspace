@@ -12,6 +12,8 @@
 #include <QApplication>
 #include <QDebug>
 #include <QScreen>
+#include <QWaylandClientExtensionTemplate>
+#include <qpa/qplatformnativeinterface.h>
 
 #include "shutdowndlg.h"
 
@@ -21,6 +23,27 @@
 #include <KQuickAddons/QtQuickSettings>
 #include <KWindowSystem>
 #include <LayerShellQt/Shell>
+
+#include "qwayland-kde-lockscreen-overlay-v1.h"
+
+class WaylandAboveLockscreen : public QWaylandClientExtensionTemplate<WaylandAboveLockscreen>, public QtWayland::kde_lockscreen_overlay_v1
+{
+public:
+    WaylandAboveLockscreen()
+        : QWaylandClientExtensionTemplate<WaylandAboveLockscreen>(1)
+    {
+        QMetaObject::invokeMethod(this, "addRegistryListener");
+    }
+
+    void allowWindow(QWindow *window)
+    {
+        QPlatformNativeInterface *native = qGuiApp->platformNativeInterface();
+        wl_surface *surface = reinterpret_cast<wl_surface *>(native->nativeResourceForWindow(QByteArrayLiteral("surface"), window));
+
+        Q_ASSERT(surface);
+        allow(surface);
+    }
+};
 
 Greeter::Greeter(const KPackage::Package &package)
     : QObject()
@@ -82,6 +105,33 @@ void Greeter::adoptScreen(QScreen *screen)
     });
     w->setGeometry(screen->geometry());
     w->init(m_package);
+    
+    // lockscreen overlay
+    if (KWindowSystem::isPlatformWayland()) {
+        // get lockscreen state
+        QDBusMessage request = QDBusMessage::createMethodCall(QStringLiteral("org.freedesktop.ScreenSaver"),
+                                                              QStringLiteral("/ScreenSaver"),
+                                                              QStringLiteral("org.freedesktop.ScreenSaver"),
+                                                              QStringLiteral("GetActive"));
+        const QDBusReply<bool> response = QDBusConnection::sessionBus().call(request);
+
+        bool lockscreenShown = response.isValid() ? response.value() : false;
+        
+        if (lockscreenShown) {
+            // allow window over lockscreen
+            WaylandAboveLockscreen aboveLockscreen;
+            Q_ASSERT(aboveLockscreen.isInitialized());
+            aboveLockscreen.allowWindow(w);
+            
+            // put window over lockscreen
+            KWindowSystem::requestXdgActivationToken(w, 0, QStringLiteral("org.kde.plasmashell.desktop"));
+
+            QObject::connect(KWindowSystem::self(), &KWindowSystem::xdgActivationTokenArrived, w, [w](int, const QString &token) {
+                KWindowSystem::setCurrentXdgActivationToken(token);
+                KWindowSystem::activateWindow(w);
+            });
+        }
+    }
 }
 
 void Greeter::rejected()
