@@ -30,7 +30,7 @@ static QObject *clipboardMenu_singletontype_provider(QQmlEngine *engine, QJSEngi
 
 void DigitalClockPlugin::registerTypes(const char *uri)
 {
-    Q_ASSERT(uri == QLatin1String("org.kde.plasma.private.digitalclock"));
+    Q_ASSERT(uri == QByteArrayView("org.kde.plasma.private.digitalclock"));
 
     qmlRegisterType<TimeZoneModel>(uri, 1, 0, "TimeZoneModel");
     qmlRegisterType<TimeZoneFilterProxy>(uri, 1, 0, "TimeZoneFilterProxy");

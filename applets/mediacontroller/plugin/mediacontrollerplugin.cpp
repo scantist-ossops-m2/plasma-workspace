@@ -11,7 +11,7 @@
 
 void MediaControllerPlugin::registerTypes(const char *uri)
 {
-    Q_ASSERT(uri == QLatin1String("org.kde.plasma.private.mediacontroller"));
+    Q_ASSERT(uri == QByteArrayView("org.kde.plasma.private.mediacontroller"));
 
     qmlRegisterType<GlobalConfig>(uri, 1, 0, "GlobalConfig");
 }

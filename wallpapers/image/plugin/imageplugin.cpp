@@ -5,6 +5,8 @@
 */
 
 #include "imageplugin.h"
+
+#include <QByteArrayView>
 #include <QQmlContext>
 
 #include <KFileItem>
@@ -16,7 +18,10 @@
 #include "utils/maximizedwindowmonitor.h"
 #include "utils/mediaproxy.h"
 
-const auto pluginName = QByteArrayLiteral("org.kde.plasma.wallpapers.image");
+namespace
+{
+inline constexpr QByteArrayView pluginName = "org.kde.plasma.wallpapers.image";
+}
 
 void ImagePlugin::initializeEngine(QQmlEngine *engine, const char *uri)
 {

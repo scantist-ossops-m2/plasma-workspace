@@ -15,7 +15,7 @@
 
 void CalendarPlugin::registerTypes(const char *uri)
 {
-    Q_ASSERT(uri == QByteArray("org.kde.plasma.workspace.calendar"));
+    Q_ASSERT(uri == QByteArrayView("org.kde.plasma.workspace.calendar"));
     qmlRegisterType<Calendar>(uri, 2, 0, "Calendar");
     qmlRegisterType<EventPluginsManager>(uri, 2, 0, "EventPluginsManager");
     qmlRegisterAnonymousType<QAbstractItemModel>(uri, 1);

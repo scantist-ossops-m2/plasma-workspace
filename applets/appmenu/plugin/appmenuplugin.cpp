@@ -10,6 +10,6 @@
 
 void AppmenuPlugin::registerTypes(const char *uri)
 {
-    Q_ASSERT(uri == QLatin1String("org.kde.plasma.private.appmenu"));
+    Q_ASSERT(uri == QByteArrayView("org.kde.plasma.private.appmenu"));
     qmlRegisterType<AppMenuModel>(uri, 1, 0, "AppMenuModel");
 }

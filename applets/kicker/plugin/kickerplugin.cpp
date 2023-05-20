@@ -27,7 +27,7 @@
 
 void KickerPlugin::registerTypes(const char *uri)
 {
-    Q_ASSERT(QLatin1String(uri) == QLatin1String("org.kde.plasma.private.kicker"));
+    Q_ASSERT(uri == QByteArrayView("org.kde.plasma.private.kicker"));
 
     qmlRegisterAnonymousType<AbstractModel>("", 1);
 

@@ -17,7 +17,7 @@
 
 void ContainmentLayoutManagerPlugin::registerTypes(const char *uri)
 {
-    Q_ASSERT(QLatin1String(uri) == QLatin1String("org.kde.plasma.private.containmentlayoutmanager"));
+    Q_ASSERT(uri == QByteArrayView("org.kde.plasma.private.containmentlayoutmanager"));
 
     qmlRegisterType<AppletsLayout>(uri, 1, 0, "AppletsLayout");
     qmlRegisterType<AppletContainer>(uri, 1, 0, "AppletContainer");
