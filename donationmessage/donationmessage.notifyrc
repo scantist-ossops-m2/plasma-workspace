@@ -1,0 +1,13 @@
+[Global]
+IconName=love
+Name=Yearly Donation Message
+
+[Context/Application]
+Name=Application
+
+[Event/ShowDonationMessage]
+Name=Donate to KDE
+Comment=KDE needs your help! Donations fund development and infrastructure important for KDE's continued existence.
+Contexts=Application
+Action=Popup
+Urgency=Low

@@ -393,6 +393,7 @@ add_subdirectory(kioworkers)
 add_subdirectory(ktimezoned)
 add_subdirectory(menu)
 add_subdirectory(phonon)
+add_subdirectory(donationmessage)
 
 add_subdirectory(interactiveconsole)
 
