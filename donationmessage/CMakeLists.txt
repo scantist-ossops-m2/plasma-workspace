@@ -7,6 +7,7 @@ target_link_libraries(donationmessage
                         KF6::CoreAddons
                         KF6::DBusAddons
                         KF6::I18n
+                        KF6::KIOCore
                         KF6::Notifications
                      )
 

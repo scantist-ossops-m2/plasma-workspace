@@ -7,6 +7,7 @@
 #include "donationmessage.h"
 
 #include <KConfigWatcher>
+#include <KIO/OpenUrlJob>
 #include <KLocalizedString>
 #include <KNotification>
 #include <KPluginFactory>
@@ -42,8 +43,12 @@ void DonationMessage::showMessage()
         });
 
         // "Donate" button clicked
-        connect(notification, &KNotification::action1Activated, this, [group, notification]() {
-            group->writeEntry(QStringLiteral("enabled"), false);
+        connect(notification, &KNotification::action1Activated, this, [notification]() {
+            const QUrl *url = new QUrl("https://kde.org/community/donations");
+            auto *job = new KIO::OpenUrlJob(url);
+            // job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, QApplication::activeWindow()));
+            // job->setShowOpenOrExecuteDialog(true);
+            job->start();
             notification->close();
         });
 
