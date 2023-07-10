@@ -18,6 +18,7 @@
 #include <KApplicationTrader>
 #include <KConfig>
 #include <KConfigGroup>
+#include <KFileUtils>
 #include <KLocalizedString>
 #include <KService>
 #include <KSharedConfig>
@@ -223,82 +224,73 @@ void SourcesModel::load()
     QVector<SourceData> appsData;
     QVector<SourceData> servicesData;
 
-    QStringList notifyRcFiles;
     QStringList desktopEntries;
 
     // Search for notifyrc files in `/knotifications6` folders first, but also in `/knotifications5` for compatibility with KF5 applications
     const QStringList dirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("knotifications6"), QStandardPaths::LocateDirectory)
         + QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("knotifications5"), QStandardPaths::LocateDirectory);
-    for (const QString &dir : dirs) {
-        const QDir dirInfo(dir);
-        const QStringList fileNames = dirInfo.entryList(QStringList() << QStringLiteral("*.notifyrc"));
-        for (const QString &file : fileNames) {
-            if (notifyRcFiles.contains(file)) {
+    const QStringList files = KFileUtils::findAllUniqueFiles(dirs, {QStringLiteral("*.notifyrc")});
+
+    for (const QString &file : files) {
+        const QFileInfo fileInfo(file);
+        const QString fileName = fileInfo.fileName();
+        const QString dirName = fileInfo.dir().dirName(); // "knotifications6" or "knotifications5"
+
+        KConfig config(fileName, KConfig::NoGlobals);
+        config.addConfigSources(QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("%2/%1").arg(fileName).arg(dirName)));
+        KConfigGroup globalGroup(&config, QLatin1String("Global"));
+
+        const QRegularExpression regExp(QStringLiteral("^Event/([^/]*)$"));
+        const QStringList groups = config.groupList().filter(regExp);
+
+        const QString desktopEntry = globalGroup.readEntry(QStringLiteral("DesktopEntry"));
+        if (!desktopEntry.isEmpty()) {
+            if (desktopEntries.contains(desktopEntry)) {
                 continue;
             }
+            desktopEntries.append(desktopEntry);
+        }
 
-            notifyRcFiles.append(file);
+        SourceData source{
+            // The old KCM read the Name and Comment from global settings disregarding
+            // any user settings and just used user-specific files for actions config
+            // I'm pretty sure there's a readEntry equivalent that does that without
+            // reading the config stuff twice, assuming we care about this to begin with
+            globalGroup.readEntry(QStringLiteral("Name")),
+            globalGroup.readEntry(QStringLiteral("Comment")),
+            globalGroup.readEntry(QStringLiteral("IconName")),
+            true,
+            fileName.section(QLatin1Char('.'), 0, -2), // notifyRcName
+            desktopEntry,
+            {} // events
+        };
 
-            KConfig config(file, KConfig::NoGlobals);
-            config.addConfigSources(QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("%2/%1").arg(file).arg(dirInfo.dirName())));
+        QVector<EventData> events;
+        for (const QString &group : groups) {
+            KConfigGroup cg(&config, group);
+            const QString eventId = regExp.match(group).captured(1);
+            // TODO context stuff
+            // TODO load defaults thing
 
-            KConfigGroup globalGroup(&config, QLatin1String("Global"));
+            EventData event{cg.readEntry("Name"),
+                            cg.readEntry("Comment"),
+                            cg.readEntry("IconName"),
+                            eventId,
+                            // TODO Flags?
+                            cg.readEntry("Action").split(QLatin1Char('|'))};
+            events.append(event);
+        }
 
-            const QRegularExpression regExp(QStringLiteral("^Event/([^/]*)$"));
-            const QStringList groups = config.groupList().filter(regExp);
+        std::sort(events.begin(), events.end(), [&collator](const EventData &a, const EventData &b) {
+            return collator.compare(a.name, b.name) < 0;
+        });
 
-            const QString notifyRcName = file.section(QLatin1Char('.'), 0, -2);
-            const QString desktopEntry = globalGroup.readEntry(QStringLiteral("DesktopEntry"));
-            if (!desktopEntry.isEmpty()) {
-                if (desktopEntries.contains(desktopEntry)) {
-                    continue;
-                }
+        source.events = events;
 
-                desktopEntries.append(desktopEntry);
-            }
-
-            SourceData source{
-                // The old KCM read the Name and Comment from global settings disregarding
-                // any user settings and just used user-specific files for actions config
-                // I'm pretty sure there's a readEntry equivalent that does that without
-                // reading the config stuff twice, assuming we care about this to begin with
-                globalGroup.readEntry(QStringLiteral("Name")),
-                globalGroup.readEntry(QStringLiteral("Comment")),
-                globalGroup.readEntry(QStringLiteral("IconName")),
-                true,
-                notifyRcName,
-                desktopEntry,
-                {} // events
-            };
-
-            QVector<EventData> events;
-            for (const QString &group : groups) {
-                KConfigGroup cg(&config, group);
-
-                const QString eventId = regExp.match(group).captured(1);
-                // TODO context stuff
-                // TODO load defaults thing
-
-                EventData event{cg.readEntry("Name"),
-                                cg.readEntry("Comment"),
-                                cg.readEntry("IconName"),
-                                eventId,
-                                // TODO Flags?
-                                cg.readEntry("Action").split(QLatin1Char('|'))};
-                events.append(event);
-            }
-
-            std::sort(events.begin(), events.end(), [&collator](const EventData &a, const EventData &b) {
-                return collator.compare(a.name, b.name) < 0;
-            });
-
-            source.events = events;
-
-            if (!source.desktopEntry.isEmpty()) {
-                appsData.append(source);
-            } else {
-                servicesData.append(source);
-            }
+        if (!source.desktopEntry.isEmpty()) {
+            appsData.append(source);
+        } else {
+            servicesData.append(source);
         }
     }
 
