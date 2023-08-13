@@ -85,6 +85,7 @@ PlasmaComponents3.ItemDelegate {
                 Accessible.description: percent.text
 
                 onMoved: root.moved()
+                live: false
             }
         }
     }
