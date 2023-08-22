@@ -124,6 +124,12 @@ QString KCMRegionAndLang::localeFileDirPath()
 
 void KCMRegionAndLang::save()
 {
+    applyToLocal();
+    applyToSystem();
+}
+
+void KCMRegionAndLang::applyToLocal()
+{
     // assemble full locales in use
     QStringList locales;
     if (!settings()->isDefaultSetting(SettingType::Lang)) {
