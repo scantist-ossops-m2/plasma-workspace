@@ -124,8 +124,7 @@ QString KCMRegionAndLang::localeFileDirPath()
 
 void KCMRegionAndLang::save()
 {
-    applyToLocal();
-    applyToSystem();
+    Q_EMIT saveClicked();
 }
 
 void KCMRegionAndLang::applyToLocal()
@@ -185,7 +184,6 @@ void KCMRegionAndLang::applyToLocal()
         // probably after clicking "defaults" so all the setting is default
         saveToConfigFile();
     }
-    Q_EMIT saveClicked();
 }
 
 void KCMRegionAndLang::applyToSystem()
@@ -223,6 +221,7 @@ void KCMRegionAndLang::applyToSystem()
                                                         QStringLiteral("/org/freedesktop/locale1"),
                                                         QStringLiteral("org.freedesktop.locale1"),
                                                         QStringLiteral("SetLocale"));
+    qDebug() << args;
     setLocaleCall.setArguments({args, true});
     QDBusConnection::systemBus().asyncCall(setLocaleCall);
 }
