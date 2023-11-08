@@ -227,6 +227,24 @@ PlasmoidItem {
         isHeldOnPowerSaveMode: batterymonitor.isHeldOnPowerSaveMode
         isSomehowFullyCharged: batterymonitor.isSomehowFullyCharged
 
+        onWheel: wheel => {
+            let profiles = batterymonitor.profiles;
+            if (!profiles) {
+                return;
+            }
+            let activeProfile = batterymonitor.actuallyActiveProfile;
+            console.log("battery:", profiles, activeProfile, profiles.indexOf(activeProfile), profiles.length, wheel.angleDelta.y);
+            let newProfile = activeProfile;
+            if (wheel.angleDelta.y > 0 && profiles.indexOf(activeProfile) < profiles.length - 1) {
+                newProfile = profiles[profiles.indexOf(activeProfile) + 1];
+            } else if (wheel.angleDelta.y < 0 && profiles.indexOf(activeProfile) > 0) {
+                newProfile = profiles[profiles.indexOf(activeProfile) - 1];
+            }
+            console.log("battery:", "new profile:", newProfile);
+            dialogItem.activateProfileRequested(newProfile);
+        }
+    }
+
     fullRepresentation: PopupDialog {
         id: dialogItem
 
