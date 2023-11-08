@@ -21,6 +21,7 @@ public:
     bool isAvailable() const;
     bool isEnabled() const;
     bool isRunning() const;
+    bool isDaylight() const;
 
 Q_SIGNALS:
     void currentTemperatureChanged();
@@ -28,6 +29,7 @@ Q_SIGNALS:
     void availableChanged();
     void enabledChanged();
     void runningChanged();
+    void daylightChanged();
 
 private Q_SLOTS:
     void handlePropertiesChanged(const QString &interfaceName, const QVariantMap &changedProperties, const QStringList &invalidatedProperties);
@@ -39,10 +41,12 @@ private:
     void setAvailable(bool available);
     void setEnabled(bool enabled);
     void setRunning(bool running);
+    void setDaylight(bool daylight);
 
     int m_currentTemperature = 0;
     int m_targetTemperature = 0;
     bool m_isAvailable = false;
     bool m_isEnabled = false;
     bool m_isRunning = false;
+    bool m_isDaylight = false;
 };

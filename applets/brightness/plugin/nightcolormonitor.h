@@ -33,6 +33,11 @@ class NightColorMonitor : public QObject
     Q_PROPERTY(bool running READ isRunning NOTIFY runningChanged)
 
     /**
+     * This property holds a value to indicate if Night Color is on day mode.
+     */
+    Q_PROPERTY(bool daylight READ isDaylight NOTIFY daylightChanged)
+
+    /**
      * This property holds a value to indicate currently applied color temperature.
      */
     Q_PROPERTY(int currentTemperature READ currentTemperature NOTIFY currentTemperatureChanged)
@@ -62,6 +67,11 @@ public:
     bool isRunning() const;
 
     /**
+     * Returns @c true if Night Color is on day mode; otherwise @c false.
+     */
+    bool isDaylight() const;
+
+    /**
      * Returns currently applied screen color temperature.
      */
     int currentTemperature() const;
@@ -86,6 +96,11 @@ Q_SIGNALS:
      * Emitted whenever Night Color starts or stops running.
      */
     void runningChanged();
+
+    /**
+     * Emitted whenever Night Color changes between day and night time.
+     */
+    void daylightChanged();
 
     /**
      * Emitted whenever the current screen color temperature has changed.

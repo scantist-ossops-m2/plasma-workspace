@@ -93,6 +93,11 @@ void NightColorMonitorPrivate::updateProperties(const QVariantMap &properties)
         setRunning(running.toBool());
     }
 
+    const QVariant daylight = properties.value(QStringLiteral("daylight"));
+    if (daylight.isValid()) {
+        setDaylight(daylight.toBool());
+    }
+
     const QVariant currentTemperature = properties.value(QStringLiteral("currentTemperature"));
     if (currentTemperature.isValid()) {
         setCurrentTemperature(currentTemperature.toInt());
@@ -155,6 +160,20 @@ bool NightColorMonitorPrivate::isRunning() const
     return m_isRunning;
 }
 
+bool NightColorMonitorPrivate::isDaylight() const
+{
+    return m_isDaylight;
+}
+
+void NightColorMonitorPrivate::setDaylight(bool daylight)
+{
+    if (m_isDaylight == daylight) {
+        return;
+    }
+    m_isDaylight = daylight;
+    Q_EMIT daylightChanged();
+}
+
 void NightColorMonitorPrivate::setRunning(bool running)
 {
     if (m_isRunning == running) {
@@ -171,6 +190,7 @@ NightColorMonitor::NightColorMonitor(QObject *parent)
     connect(d, &NightColorMonitorPrivate::availableChanged, this, &NightColorMonitor::availableChanged);
     connect(d, &NightColorMonitorPrivate::enabledChanged, this, &NightColorMonitor::enabledChanged);
     connect(d, &NightColorMonitorPrivate::runningChanged, this, &NightColorMonitor::runningChanged);
+    connect(d, &NightColorMonitorPrivate::daylightChanged, this, &NightColorMonitor::daylightChanged);
     connect(d, &NightColorMonitorPrivate::currentTemperatureChanged, this, &NightColorMonitor::currentTemperatureChanged);
     connect(d, &NightColorMonitorPrivate::targetTemperatureChanged, this, &NightColorMonitor::targetTemperatureChanged);
 }
@@ -192,6 +212,11 @@ bool NightColorMonitor::isEnabled() const
 bool NightColorMonitor::isRunning() const
 {
     return d->isRunning();
+}
+
+bool NightColorMonitor::isDaylight() const
+{
+    return d->isDaylight();
 }
 
 int NightColorMonitor::currentTemperature() const
