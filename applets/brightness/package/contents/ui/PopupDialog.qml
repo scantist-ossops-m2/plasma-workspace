@@ -117,6 +117,14 @@ PlasmaExtras.Representation {
                 }
             }
 
+            NightColorItem {
+                id: nightColorItem
+
+                width: scrollView.availableWidth
+
+                text: i18n("Night Color")
+            }
+
         }
     }
 }

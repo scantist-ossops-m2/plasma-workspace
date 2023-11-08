@@ -120,7 +120,7 @@ inline const QDBusArgument &operator>>(const QDBusArgument &argument, NamedUserP
     return argument;
 }
 
-struct Inhibitor {
+struct NightColorInhibitor {
     QString what;
     QString who;
     QString why;
@@ -129,9 +129,9 @@ struct Inhibitor {
     uint processId;
 };
 
-typedef QList<Inhibitor> InhibitorList;
+typedef QList<NightColorInhibitor> InhibitorList;
 
-inline QDBusArgument &operator<<(QDBusArgument &argument, const Inhibitor &inhibitor)
+inline QDBusArgument &operator<<(QDBusArgument &argument, const NightColorInhibitor &inhibitor)
 {
     argument.beginStructure();
     argument << inhibitor.what;
@@ -144,7 +144,7 @@ inline QDBusArgument &operator<<(QDBusArgument &argument, const Inhibitor &inhib
     return argument;
 }
 
-inline const QDBusArgument &operator>>(const QDBusArgument &argument, Inhibitor &inhibitor)
+inline const QDBusArgument &operator>>(const QDBusArgument &argument, NightColorInhibitor &inhibitor)
 {
     argument.beginStructure();
     argument >> inhibitor.what;
