@@ -24,6 +24,7 @@ MouseArea {
     property bool hasBatteries: false
     required property bool isHeldOnPerformanceMode
     required property bool isHeldOnPowerSaveMode
+    required property bool isInhibited
     required property bool isSomehowFullyCharged
 
     activeFocusOnTab: true
@@ -67,17 +68,19 @@ MouseArea {
 
                 property real iconSize: Math.min(width, height)
 
-                // "Held on a Power Profile mode while plugged in" use case; show the
+                // "Held on a Power Profile mode or active inhibitions while plugged in" use case; show the
                 // icon of the active mode so the user can notice this at a glance
                 Kirigami.Icon {
                     id: powerProfileModeIcon
 
                     anchors.fill: parent
 
-                    visible: batteryContainer.pluggedIn && (root.isHeldOnPowerSaveMode || root.isHeldOnPerformanceMode)
+                    visible: batteryContainer.pluggedIn && (root.isHeldOnPowerSaveMode || root.isHeldOnPerformanceMode || root.isInhibited)
                     source: root.isHeldOnPerformanceMode
                         ? "battery-profile-performance-symbolic"
-                        : "battery-profile-powersave-symbolic"
+                        : root.isHeldOnPowerSaveMode 
+                        ? "battery-profile-powersave-symbolic"
+                        : "speedometer-symbolic"
                     active: root.containsMouse
                 }
 

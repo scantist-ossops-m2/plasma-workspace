@@ -265,6 +265,7 @@ PlasmoidItem {
         batteries: batterymonitor.batteries
         isHeldOnPerformanceMode: batterymonitor.isHeldOnPerformanceMode
         isHeldOnPowerSaveMode: batterymonitor.isHeldOnPowerSaveMode
+        isInhibited: batterymonitor.inhibitions.length > 0
         isSomehowFullyCharged: batterymonitor.isSomehowFullyCharged
 
         onWheel: wheel => {
