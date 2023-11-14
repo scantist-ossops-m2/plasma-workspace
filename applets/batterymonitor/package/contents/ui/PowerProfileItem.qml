@@ -32,18 +32,23 @@ PlasmaComponents3.ItemDelegate {
     readonly property var profileData: [
         {
             label: i18n("Power Save"),
+            icon: "battery-profile-powersave-symbolic",
             profile: "power-saver",
             canBeInhibited: false,
         }, {
             label: i18n("Balanced"),
+            icon: "speedometer-symbolic",
             profile: "balanced",
             canBeInhibited: false,
         }, {
             label: i18n("Performance"),
+            icon: "battery-profile-performance-symbolic",
             profile: "performance",
             canBeInhibited: true,
         }
     ]
+    readonly property string lowestProfile: "power-saver"
+    readonly property string highestProfile: profileData.length === 3 ? "performance" : "balanced"
 
     readonly property int activeProfileIndex: profileData.findIndex(data => data.profile === activeProfile)
     // type: typeof(profileData[])?
@@ -100,7 +105,7 @@ PlasmaComponents3.ItemDelegate {
 
                 activeFocusOnTab: false
                 from: 0
-                to: 2
+                to: root.profileData.length - 1
                 stepSize: 1
                 value: root.activeProfileIndex
                 snapMode: PlasmaComponents3.Slider.SnapAlways
@@ -138,15 +143,15 @@ PlasmaComponents3.ItemDelegate {
                 Kirigami.Icon {
                     Layout.preferredHeight: Kirigami.Units.iconSizes.smallMedium
                     Layout.preferredWidth: Kirigami.Units.iconSizes.smallMedium
-                    source: "battery-profile-powersave-symbolic"
+                    source: root.profileData.find(profile => profile.profile === root.lowestProfile).icon
 
                     HoverHandler {
-                        id: powersaveIconHover
+                        id: lowestProfileIconHover
                     }
 
                     PlasmaComponents3.ToolTip {
-                        text: root.profileData.find(profile => profile.profile === "power-saver").label
-                        visible: powersaveIconHover.hovered
+                        text: root.profileData.find(profile => profile.profile === root.lowestProfile).label
+                        visible: lowestProfileIconHover.hovered
                     }
                 }
 
@@ -157,15 +162,15 @@ PlasmaComponents3.ItemDelegate {
                 Kirigami.Icon {
                     Layout.preferredHeight: Kirigami.Units.iconSizes.smallMedium
                     Layout.preferredWidth: Kirigami.Units.iconSizes.smallMedium
-                    source: "battery-profile-performance-symbolic"
+                    source: root.profileData.find(profile => profile.profile === root.highestProfile).icon
 
                     HoverHandler {
-                        id: performanceIconHover
+                        id: highestProfileIconHover
                     }
 
                     PlasmaComponents3.ToolTip {
-                        text: root.profileData.find(profile => profile.profile === "performance").label
-                        visible: performanceIconHover.hovered
+                        text: root.profileData.find(profile => profile.profile === root.highestProfile).label
+                        visible: highestProfileIconHover.hovered
                     }
                 }
             }
