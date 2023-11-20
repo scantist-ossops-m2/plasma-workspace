@@ -15,6 +15,14 @@
 
 #include <KPluginMetaData>
 
+struct QPluginLoaderDeleter {
+    void operator()(QPluginLoader *loader)
+    {
+        loader->unload();
+        delete loader;
+    }
+};
+
 class EventPluginsManagerPrivate
 {
 public:
@@ -30,6 +38,7 @@ public:
     };
 
     std::unique_ptr<EventPluginsModel> model;
+    std::vector<std::unique_ptr<QPluginLoader, QPluginLoaderDeleter>> pluginLoaders;
     QList<CalendarEvents::CalendarEventsPlugin *> plugins;
     QMap<QString, PluginData> availablePlugins;
     QStringList enabledPlugins;
@@ -180,7 +189,6 @@ EventPluginsManagerPrivate::EventPluginsManagerPrivate()
 
 EventPluginsManagerPrivate::~EventPluginsManagerPrivate()
 {
-    qDeleteAll(plugins);
 }
 
 EventPluginsManager::EventPluginsManager(QObject *parent)
@@ -208,15 +216,15 @@ void EventPluginsManager::setEnabledPlugins(QStringList &pluginsList)
 
     // Remove all already loaded plugins from the pluginsList
     // and unload those plugins that are not in the pluginsList
-    auto i = d->plugins.begin();
-    while (i != d->plugins.end()) {
-        const QString pluginPath = (*i)->property("pluginPath").toString();
+    auto i = d->pluginLoaders.begin();
+    while (i != d->pluginLoaders.end()) {
+        const QString pluginPath = (*i)->fileName();
         if (pluginsList.contains(pluginPath)) {
             pluginsList.removeAll(pluginPath);
-            ++i;
+            i = std::next(i);
         } else {
-            (*i)->deleteLater();
-            i = d->plugins.erase(i);
+            d->plugins.removeAt(std::distance(d->pluginLoaders.begin(), i));
+            i = d->pluginLoaders.erase(i);
         }
     }
 
@@ -236,35 +244,29 @@ QStringList EventPluginsManager::enabledPlugins() const
 
 void EventPluginsManager::loadPlugin(const QString &absolutePath)
 {
-    QPluginLoader loader(absolutePath);
+    decltype(d->pluginLoaders)::value_type loader{new QPluginLoader(absolutePath)};
 
-    if (!loader.load()) {
+    if (!loader->load()) {
         qWarning() << "Could not create Plasma Calendar Plugin: " << absolutePath;
-        qWarning() << loader.errorString();
+        qWarning() << loader->errorString();
         return;
     }
 
-    QObject *obj = loader.instance();
-    if (obj) {
-        CalendarEvents::CalendarEventsPlugin *eventsPlugin = qobject_cast<CalendarEvents::CalendarEventsPlugin *>(obj);
-        if (eventsPlugin) {
-            qDebug() << "Loading Calendar plugin" << eventsPlugin;
-            eventsPlugin->setProperty("pluginPath", absolutePath);
-            d->plugins << eventsPlugin;
-
-            // Connect the relay signals
-            connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::dataReady, this, &EventPluginsManager::dataReady);
-            connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::eventModified, this, &EventPluginsManager::eventModified);
-            connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::eventRemoved, this, &EventPluginsManager::eventRemoved);
-            connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::alternateCalendarDateReady, this, &EventPluginsManager::alternateCalendarDateReady);
-            connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::subLabelReady, this, &EventPluginsManager::subLabelReady);
-        } else {
-            // not our/valid plugin, so unload it
-            loader.unload();
-        }
-    } else {
-        loader.unload();
+    auto eventsPlugin = qobject_cast<CalendarEvents::CalendarEventsPlugin *>(loader->instance());
+    if (!eventsPlugin) {
+        return;
     }
+
+    eventsPlugin->setProperty("pluginPath", loader->fileName());
+    d->plugins << eventsPlugin;
+    d->pluginLoaders.emplace_back(std::move(loader));
+
+    // Connect the relay signals
+    connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::dataReady, this, &EventPluginsManager::dataReady);
+    connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::eventModified, this, &EventPluginsManager::eventModified);
+    connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::eventRemoved, this, &EventPluginsManager::eventRemoved);
+    connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::alternateCalendarDateReady, this, &EventPluginsManager::alternateCalendarDateReady);
+    connect(eventsPlugin, &CalendarEvents::CalendarEventsPlugin::subLabelReady, this, &EventPluginsManager::subLabelReady);
 }
 
 QList<CalendarEvents::CalendarEventsPlugin *> EventPluginsManager::plugins() const
