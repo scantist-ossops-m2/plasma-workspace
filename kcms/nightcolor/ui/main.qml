@@ -215,6 +215,15 @@ KCM.SimpleKCM {
                             cA.stopPreview()
                         }
                     }
+                    // hack: make arrow keys obey the inverted slider direction by going two steps backwwards,
+                    // one to undo the wrong uninverted step and one to go in the wanted inverted step
+                    Keys.onPressed: (event)=> {
+                        if (event.key == Qt.Key_Left) {
+                            tempSliderDay.value = tempSliderDay.value + 2 * tempSliderDay.stepSize
+                        } else if (event.key == Qt.Key_Right) {
+                            tempSliderDay.value = tempSliderDay.value - 2 * tempSliderDay.stepSize
+                        }
+                    }
 
                     KCM.SettingStateBinding {
                         configObject: kcm.nightColorSettings
@@ -272,6 +281,15 @@ KCM.SimpleKCM {
                     onPressedChanged: {
                         if (!pressed) {
                             cA.stopPreview()
+                        }
+                    }
+                    // hack: make arrow keys obey the inverted slider direction by going two steps backwwards,
+                    // one to undo the wrong uninverted step and one to go in the wanted inverted step
+                    Keys.onPressed: (event)=> {
+                        if (event.key == Qt.Key_Left) {
+                            tempSliderNight.value = tempSliderNight.value + 2 * tempSliderNight.stepSize
+                        } else if (event.key == Qt.Key_Right) {
+                            tempSliderNight.value = tempSliderNight.value - 2 * tempSliderNight.stepSize
                         }
                     }
 
