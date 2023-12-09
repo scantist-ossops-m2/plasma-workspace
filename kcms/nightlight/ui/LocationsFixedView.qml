@@ -145,8 +145,8 @@ Kirigami.FormLayout {
                     Kirigami.Icon {
                         z: 9999
                         id: mapPin
-                        property double rawX: longitudeToX(kcm.nightColorSettings.longitudeFixed)
-                        property double rawY: latitudeToY(kcm.nightColorSettings.latitudeFixed)
+                        property double rawX: longitudeToX(kcm.nightLightSettings.longitudeFixed)
+                        property double rawY: latitudeToY(kcm.nightLightSettings.latitudeFixed)
                         x: rawX - (width/2)/mapRect.currentScale
                         y: rawY - (height - 4)/mapRect.currentScale
                         width: Kirigami.Units.iconSizes.medium
@@ -160,12 +160,12 @@ Kirigami.FormLayout {
                     }
 
                     Connections {
-                        target: kcm.nightColorSettings
+                        target: kcm.nightLightSettings
                         function onLatitudeFixedChanged() {
-                            mapPin.rawY = latitudeToY(kcm.nightColorSettings.latitudeFixed);
+                            mapPin.rawY = latitudeToY(kcm.nightLightSettings.latitudeFixed);
                         }
                         function onLongitudeFixedChanged() {
-                            mapPin.rawX = longitudeToX(kcm.nightColorSettings.longitudeFixed);
+                            mapPin.rawX = longitudeToX(kcm.nightLightSettings.longitudeFixed);
                         }
                     }
 
@@ -174,8 +174,8 @@ Kirigami.FormLayout {
                             let clickPos = mapImage.mapFromItem(root, eventPoint.scenePosition);
                             mapPin.rawX = clickPos.x;
                             mapPin.rawY = clickPos.y;
-                            kcm.nightColorSettings.latitudeFixed = yToLatitude(mapPin.rawY);
-                            kcm.nightColorSettings.longitudeFixed = xToLongitude(mapPin.rawX);
+                            kcm.nightLightSettings.latitudeFixed = yToLatitude(mapPin.rawY);
+                            kcm.nightLightSettings.longitudeFixed = xToLongitude(mapPin.rawX);
                         }
                     }
 
@@ -235,25 +235,25 @@ Kirigami.FormLayout {
                 text: i18nc("@label: textbox", "Latitude:")
             }
             Connections {
-                target: kcm.nightColorSettings
+                target: kcm.nightLightSettings
                 function onLatitudeFixedChanged() {
-                    latitudeFixedField.backend = kcm.nightColorSettings.latitudeFixed;
+                    latitudeFixedField.backend = kcm.nightLightSettings.latitudeFixed;
                 }
                 function onLongitudeFixedChanged() {
-                    longitudeFixedField.backend = kcm.nightColorSettings.longitudeFixed;
+                    longitudeFixedField.backend = kcm.nightLightSettings.longitudeFixed;
                 }
             }
             NumberField {
                 id: latitudeFixedField
                 validator: DoubleValidator {bottom: -90; top: 90; decimals: 10}
-                backend: kcm.nightColorSettings.latitudeFixed
+                backend: kcm.nightLightSettings.latitudeFixed
                 onBackendChanged: {
-                    kcm.nightColorSettings.latitudeFixed = backend;
+                    kcm.nightLightSettings.latitudeFixed = backend;
                 }
                 KCM.SettingStateBinding {
-                    configObject: kcm.nightColorSettings
+                    configObject: kcm.nightLightSettings
                     settingName: "LatitudeFixed"
-                    extraEnabledConditions: kcm.nightColorSettings.active
+                    extraEnabledConditions: kcm.nightLightSettings.active
                 }
             }
 
@@ -263,14 +263,14 @@ Kirigami.FormLayout {
             NumberField {
                 id: longitudeFixedField
                 validator: DoubleValidator {bottom: -180; top: 180; decimals: 10}
-                backend: kcm.nightColorSettings.longitudeFixed
+                backend: kcm.nightLightSettings.longitudeFixed
                 onBackendChanged: {
-                    kcm.nightColorSettings.longitudeFixed = backend;
+                    kcm.nightLightSettings.longitudeFixed = backend;
                 }
                 KCM.SettingStateBinding {
-                    configObject: kcm.nightColorSettings
+                    configObject: kcm.nightLightSettings
                     settingName: "LongitudeFixed"
-                    extraEnabledConditions: kcm.nightColorSettings.active
+                    extraEnabledConditions: kcm.nightLightSettings.active
                 }
             }
         }

@@ -1,7 +1,7 @@
 ecm_add_qml_module(brightnesscontrolplugin URI org.kde.plasma.private.brightnesscontrolplugin)
 target_sources(brightnesscontrolplugin PRIVATE
-    nightcolorinhibitor.cpp
-    nightcolormonitor.cpp
+    nightlightinhibitor.cpp
+    nightlightmonitor.cpp
     plugin.cpp
 )
 target_link_libraries(brightnesscontrolplugin PRIVATE

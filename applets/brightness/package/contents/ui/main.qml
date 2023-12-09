@@ -63,13 +63,13 @@ PlasmoidItem {
     property int screenBrightnessPercent: maximumScreenBrightness ? Math.round(100 * screenBrightness / maximumScreenBrightness) : 0
     property int keyboardBrightnessPercent: maximumKeyboardBrightness ? Math.round(100 * keyboardBrightness / maximumKeyboardBrightness) : 0
 
-    NightColorMonitor {
-        id: nightColorMonitor
+    NightLightMonitor {
+        id: nightLightMonitor
     }
-    NightColorInhibitor {
-        id: nightColorInhibitor
+    NightLightInhibitor {
+        id: nightLightInhibitor
     }
-    property bool isNightColorActive: nightColorMonitor.running && nightColorMonitor.currentTemperature != 6500
+    property bool isNightLightActive: nightLightMonitor.running && nightLightMonitor.currentTemperature != 6500
 
     function symbolicizeIconName(iconName) {
         const symbolicSuffix = "-symbolic";
@@ -89,7 +89,7 @@ PlasmoidItem {
     LayoutMirroring.childrenInherit: true
 
     Plasmoid.status: {
-        return isScreenBrightnessAvailable || isKeyboardBrightnessAvailable || isNightColorActive ? PlasmaCore.Types.ActiveStatus : PlasmaCore.Types.PassiveStatus;
+        return isScreenBrightnessAvailable || isKeyboardBrightnessAvailable || isNightLightActive ? PlasmaCore.Types.ActiveStatus : PlasmaCore.Types.PassiveStatus;
     }
 
     toolTipMainText: {
@@ -100,11 +100,11 @@ PlasmoidItem {
         if (isKeyboardBrightnessAvailable) {
             parts.push(i18n("Keyboard brightness at %1%", keyboardBrightnessPercent));
         }
-        if (nightColorMonitor.enabled) {
-            if (!nightColorMonitor.running) {
+        if (nightLightMonitor.enabled) {
+            if (!nightLightMonitor.running) {
                 parts.push(i18nc("Status", "Night Light off"));
-            } else if (nightColorMonitor.currentTemperature != 6500) {
-                parts.push(i18nc("Status; placeholder is a temperature", "Night Light at %1K", nightColorMonitor.currentTemperature));
+            } else if (nightLightMonitor.currentTemperature != 6500) {
+                parts.push(i18nc("Status; placeholder is a temperature", "Night Light at %1K", nightLightMonitor.currentTemperature));
             }
         }
 
@@ -116,7 +116,7 @@ PlasmoidItem {
         if (isScreenBrightnessAvailable) {
             parts.push(i18n("Scroll to adjust screen brightness"));
         }
-        if (nightColorMonitor.enabled) {
+        if (nightLightMonitor.enabled) {
             parts.push(i18n("Middle-click to toggle Night Light"));
         }
         return parts.join("\n");
@@ -125,11 +125,11 @@ PlasmoidItem {
     Plasmoid.icon: {
         let iconName = "brightness-high";
 
-        if (nightColorMonitor.enabled) {
-            if (!nightColorMonitor.running) {
+        if (nightLightMonitor.enabled) {
+            if (!nightLightMonitor.running) {
                 iconName = "redshift-status-off";
-            } else if (nightColorMonitor.currentTemperature != 6500) {
-                if (nightColorMonitor.daylight) {
+            } else if (nightLightMonitor.currentTemperature != 6500) {
+                if (nightLightMonitor.daylight) {
                     iconName = "redshift-status-day";
                 } else {
                     iconName = "redshift-status-on";
@@ -210,24 +210,24 @@ PlasmoidItem {
         onPressed: wasExpanded = brightnesscontrol.expanded
         onClicked: mouse => {
             if (mouse.button == Qt.MiddleButton) {
-                toggleNightColorInhibition();
+                toggleNightLightInhibition();
             } else {
                 brightnesscontrol.expanded = !wasExpanded;
             }
         }
 
-        function toggleNightColorInhibition() {
-            if (!nightColorMonitor.available) {
+        function toggleNightLightInhibition() {
+            if (!nightLightMonitor.available) {
                 return;
             }
-            switch (nightColorInhibitor.state) {
-            case NightColorInhibitor.Inhibiting:
-            case NightColorInhibitor.Inhibited:
-                nightColorInhibitor.uninhibit();
+            switch (nightLightInhibitor.state) {
+            case NightLightInhibitor.Inhibiting:
+            case NightLightInhibitor.Inhibited:
+                nightLightInhibitor.uninhibit();
                 break;
-            case NightColorInhibitor.Uninhibiting:
-            case NightColorInhibitor.Uninhibited:
-                nightColorInhibitor.inhibit();
+            case NightLightInhibitor.Uninhibiting:
+            case NightLightInhibitor.Uninhibited:
+                nightLightInhibitor.inhibit();
                 break;
             }
         }
@@ -256,9 +256,9 @@ PlasmoidItem {
             id: configureNightLight
             icon.name: "configure"
             text: "Configure Night Light…"
-            visible: KAuthorized.authorize("kcm_nightcolor")
+            visible: KAuthorized.authorize("kcm_nightlight")
             priority: PlasmaCore.Action.LowPriority
-            onTriggered: KCMLauncher.openSystemSettings("kcm_nightcolor")
+            onTriggered: KCMLauncher.openSystemSettings("kcm_nightlight")
         }
     ]
 

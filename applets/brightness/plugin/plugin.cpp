@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "nightcolorinhibitor.h"
-#include "nightcolormonitor.h"
+#include "nightlightinhibitor.h"
+#include "nightlightmonitor.h"
 
 #include <QQmlEngine>
 #include <QQmlExtensionPlugin>
@@ -18,8 +18,8 @@ class Plugin : public QQmlExtensionPlugin
 public:
     void registerTypes(const char *uri) override
     {
-        qmlRegisterType<NightColorInhibitor>(uri, 1, 0, "NightColorInhibitor");
-        qmlRegisterType<NightColorMonitor>(uri, 1, 0, "NightColorMonitor");
+        qmlRegisterType<NightLightInhibitor>(uri, 1, 0, "NightLightInhibitor");
+        qmlRegisterType<NightLightMonitor>(uri, 1, 0, "NightLightMonitor");
     }
 };
 

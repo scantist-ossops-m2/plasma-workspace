@@ -106,7 +106,7 @@ PlasmaExtras.Representation {
                 visible: dialog.isKeyboardBrightnessAvailable
 
                 KeyNavigation.up: screenBrightnessSlider.visible ? screenBrightnessSlider : screenBrightnessSlider.KeyNavigation.up
-                KeyNavigation.down: nightColorItem
+                KeyNavigation.down: nightLightItem
                 KeyNavigation.backtab: KeyNavigation.up
                 KeyNavigation.tab: KeyNavigation.down
 
@@ -122,8 +122,8 @@ PlasmaExtras.Representation {
                 }
             }
 
-            NightColorItem {
-                id: nightColorItem
+            NightLightItem {
+                id: nightLightItem
 
                 width: scrollView.availableWidth
 
