@@ -9,6 +9,7 @@ import QtQuick.Controls 2.15 as QQC2 // For StackView
 import QtQuick.Layouts 1.1
 import org.kde.plasma.components 3.0 as PlasmaComponents3
 import org.kde.kirigami 2.20 as Kirigami
+import org.kde.plasma.extras 2.0 as PlasmaExtras
 import org.kde.kquickcontrolsaddons 2.0
 
 ColumnLayout {
@@ -16,7 +17,15 @@ ColumnLayout {
     property alias text: textArea.text
     property string uuid
 
-    property var header: Item {}
+    property PlasmaExtras.PlasmoidHeading header: PlasmaExtras.PlasmoidHeading {
+        PlasmaComponents3.Button {
+            anchors.fill: parent
+            Layout.fillWidth: true
+            icon.name: "go-previous-view"
+            text: i18n("Return to Clipboard")
+            onClicked: stack.pop()
+        }
+     }
 
     Keys.onPressed: event => {
         if (event.key === Qt.Key_Escape) {
