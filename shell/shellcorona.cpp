@@ -1176,16 +1176,16 @@ QRect ShellCorona::_availableScreenRect(int id) const
         if (v->isVisible() && v->screen() == screen && v->visibilityMode() != PanelView::AutoHide) {
             switch (v->location()) {
             case Plasma::Types::LeftEdge:
-                leftThickness = qMax(leftThickness, v->totalThickness());
+                leftThickness = qMax(leftThickness, v->spaceToReserve());
                 break;
             case Plasma::Types::RightEdge:
-                rightThickness = qMax(rightThickness, v->totalThickness());
+                rightThickness = qMax(rightThickness, v->spaceToReserve());
                 break;
             case Plasma::Types::TopEdge:
-                topThickness = qMax(topThickness, v->totalThickness());
+                topThickness = qMax(topThickness, v->spaceToReserve());
                 break;
             case Plasma::Types::BottomEdge:
-                bottomThickness = qMax(bottomThickness, v->totalThickness());
+                bottomThickness = qMax(bottomThickness, v->spaceToReserve());
             default:
                 break;
             }
