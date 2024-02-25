@@ -82,7 +82,7 @@ KCM.ScrollViewKCM {
             type: Kirigami.MessageType.Error
         }
     }
-
+    
     Kirigami.PromptDialog {
         id: applyDialog
         title: i18nc("@title:window", "Apply locale settings")
@@ -92,17 +92,35 @@ KCM.ScrollViewKCM {
             Kirigami.Action {
                 text: i18nc("@action:button", "Apply to system and current user")
                 icon.name: "delete"
-                onTriggered: dialog.accept();
+                onTriggered: {
+                    applyDialog.accept();
+                    // return to first page
+                    while (kcm.depth > 1) {
+                        kcm.takeLast();
+                    }
+                }
             },
             Kirigami.Action {
                 text: i18nc("@action:button", "Only apply to current user")
                 icon.name: "dialog-cancel"
-                onTriggered: dialog.reject();
+                onTriggered: {
+                    applyDialog.reject();
+                    // return to first page
+                    while (kcm.depth > 1) {
+                        kcm.takeLast();
+                    }
+                }
             },
             Kirigami.Action {
                 text: i18nc("@action:button", "Cancel")
                 icon.name: "dialog-cancel"
-                onTriggered: dialog.reject();
+                onTriggered: {
+                    applyDialog.reject();
+                    // return to first page
+                    while (kcm.depth > 1) {
+                        kcm.takeLast();
+                    }
+                }
             }
         ]
     }
@@ -126,10 +144,7 @@ KCM.ScrollViewKCM {
             installSuccessMsg.visible = true;
         }
         function onSaveClicked() {
-            // return to first page on save action since all messages are here
-            while (kcm.depth > 1) {
-                kcm.takeLast();
-            }
+            // open apply dialog
             applyDialog.open();
         }
         function onTakeEffectNextTime() {
