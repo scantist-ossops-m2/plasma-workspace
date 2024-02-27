@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE void reboot();
     Q_INVOKABLE void applyToLocal();
     Q_INVOKABLE void applyToSystem();
+    Q_INVOKABLE void saveCanceled();
 
 public Q_SLOTS:
     void load() override;
