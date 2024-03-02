@@ -15,6 +15,7 @@
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QDBusPendingCall>
+#include <QDBusPendingReply>
 #include <QDir>
 #include <QQuickImageProvider>
 
@@ -108,6 +109,15 @@ KCMRegionAndLang::KCMRegionAndLang(QObject *parent, const KPluginMetaData &data)
 #else
     m_enabled = true;
 #endif
+
+    auto setLocaleCall = QDBusMessage::createMethodCall(QStringLiteral("org.freedesktop.locale1"),
+                                                        QStringLiteral("/org/freedesktop/locale1"),
+                                                        QStringLiteral("org.freedesktop.DBus.Introspectable"),
+                                                        QStringLiteral("Introspect"));
+    QDBusPendingCall async = QDBusConnection::systemBus().asyncCall(setLocaleCall);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
+
+    QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this, &KCMRegionAndLang::handleLocaledAvailable);
 }
 
 QString KCMRegionAndLang::failedFindLocalesMessage()
@@ -222,16 +232,8 @@ void KCMRegionAndLang::applyToSystem()
                                                         QStringLiteral("/org/freedesktop/locale1"),
                                                         QStringLiteral("org.freedesktop.locale1"),
                                                         QStringLiteral("SetLocale"));
-    qDebug() << args;
     setLocaleCall.setArguments({args, true});
     QDBusConnection::systemBus().asyncCall(setLocaleCall);
-    auto setLangCall = QDBusMessage::createMethodCall(QStringLiteral("org.freedesktop.Accounts"),
-                                                      QStringLiteral("/org/freedesktop/Accounts/User%1").arg(getuid()),
-                                                      QStringLiteral("org.freedesktop.Accounts.User"),
-                                                      QStringLiteral("SetLanguage"));
-    setLangCall.setArguments({settings()->lang()});
-    QDBusConnection::systemBus().asyncCall(setLangCall);
-    saveToConfigFile();
 }
 
 void KCMRegionAndLang::saveCanceled()
@@ -242,6 +244,18 @@ void KCMRegionAndLang::saveCanceled()
 void KCMRegionAndLang::saveToConfigFile()
 {
     KQuickManagedConfigModule::save();
+}
+
+void KCMRegionAndLang::handleLocaledAvailable(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<QString> reply = *call;
+    if (reply.isError()) {
+        qWarning("failed to introspect org.freedesktop.locale1, disable `applyToSystem`");
+    } else {
+        m_localedAvailable = true;
+        Q_EMIT localedAvailableChanged();
+    }
+    call->deleteLater();
 }
 
 RegionAndLangSettings *KCMRegionAndLang::settings() const
@@ -314,6 +328,11 @@ void KCMRegionAndLang::reboot()
 bool KCMRegionAndLang::enabled() const
 {
     return m_enabled;
+}
+
+bool KCMRegionAndLang::localedAvailable() const
+{
+    return m_localedAvailable;
 }
 
 #ifdef GLIBC_LOCALE

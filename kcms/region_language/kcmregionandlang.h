@@ -23,6 +23,7 @@
 class RegionAndLangSettings;
 class OptionsModel;
 class LocaleGeneratorBase;
+class QDBusPendingCallWatcher;
 
 class KCMRegionAndLang : public KQuickManagedConfigModule
 {
@@ -30,6 +31,7 @@ class KCMRegionAndLang : public KQuickManagedConfigModule
     Q_PROPERTY(RegionAndLangSettings *settings READ settings CONSTANT)
     Q_PROPERTY(OptionsModel *optionsModel READ optionsModel CONSTANT)
     Q_PROPERTY(bool enabled READ enabled NOTIFY enabledChanged)
+    Q_PROPERTY(bool localedAvailable READ localedAvailable NOTIFY localedAvailableChanged)
 
 public:
     explicit KCMRegionAndLang(QObject *parent, const KPluginMetaData &data);
@@ -39,6 +41,7 @@ public:
 
     OptionsModel *optionsModel() const;
     bool enabled() const;
+    bool localedAvailable() const;
 #ifdef GLIBC_LOCALE
     std::optional<QString> toGlibcLocale(const QString &lang);
 #endif
@@ -58,11 +61,13 @@ Q_SIGNALS:
     void generateFinished();
     void requireInstallFont();
     void enabledChanged();
+    void localedAvailableChanged();
     void encountedError(const QString &reason);
     void userHasToGenerateManually(const QString &reason);
 
 private Q_SLOTS:
     void saveToConfigFile();
+    void handleLocaledAvailable(QDBusPendingCallWatcher *);
 
 private:
 #ifdef GLIBC_LOCALE
@@ -77,4 +82,5 @@ private:
     LocaleGeneratorBase *m_generator = nullptr;
     QProcess *m_localectl = nullptr;
     bool m_enabled = false;
+    bool m_localedAvailable = false;
 };
