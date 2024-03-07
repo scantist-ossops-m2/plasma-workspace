@@ -32,6 +32,17 @@ ColumnLayout {
 
     spacing: 0
 
+    function configureEvents(eventId) {
+        const idx = kcm.sourcesModel.indexOfEvent(eventsModel.rootIndex, eventId);
+        if (!idx.valid) {
+            return;
+        }
+        eventsList.currentIndex = idx.row;
+        eventsList.positionViewAtIndex(idx.row, ListView.Content)
+        eventsList.forceActiveFocus();
+        Qt.callLater(() => { eventsList.currentItem.expanded = true; })
+    }
+
     // Top content
     Rectangle {
         Layout.fillWidth: true
