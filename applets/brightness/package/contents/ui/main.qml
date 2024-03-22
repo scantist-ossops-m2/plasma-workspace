@@ -216,5 +216,9 @@ PlasmoidItem {
             onTriggered: KCMLauncher.openSystemSettings("kcm_nightcolor")
         }
     ]
+    
+    Component.onCompleted: {
+       Plasmoid.removeInternalAction("configure");
+    }
 
 }
