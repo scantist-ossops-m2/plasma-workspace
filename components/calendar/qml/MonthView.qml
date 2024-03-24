@@ -260,7 +260,7 @@ Item {
 
         KeyNavigation.left: root.showDigitalClockHeader ? root.KeyNavigation.left : viewHeader.tabBar
         KeyNavigation.tab: viewHeader.tabButton
-        Keys.onLeftPressed: event => { Keys.upPressed(event) }
+        Keys.onLeftPressed: event => Keys.upPressed(event)
         Keys.onUpPressed: viewHeader.tabBar.currentItem.forceActiveFocus(Qt.BacktabFocusReason);
 
         onCurrentIndexChanged: if (currentIndex > 1) {
@@ -274,11 +274,11 @@ Item {
             onWheel: wheel => {
                 // magic number 15 for common "one scroll"
                 // See https://doc.qt.io/qt-6/qml-qtquick-wheelhandler.html#rotation-prop
-                while(rotation >= 15) {
+                while (rotation >= 15) {
                     rotation -= 15;
                     root.previousView();
                 }
-                while(rotation <= -15) {
+                while (rotation <= -15) {
                     rotation += 15;
                     root.nextView();
                 }
@@ -287,20 +287,20 @@ Item {
 
         // MonthView
         InfiniteList {
-           id: mainDaysCalendar
+            id: mainDaysCalendar
 
-           function handleUpPress(event) {
-                if(root.showDigitalClockHeader) {
+            function handleUpPress(event) {
+                if (root.showDigitalClockHeader) {
                     root.Keys.upPressed(event);
                     return;
                 }
                 swipeView.Keys.upPressed(event);
             }
 
-           backend: calendarBackend
-           viewType: InfiniteList.ViewType.DayView
+            backend: calendarBackend
+            viewType: InfiniteList.ViewType.DayView
 
-           delegate: DaysCalendar {
+            delegate: DaysCalendar {
                 columns: calendarBackend.days
                 rows: calendarBackend.weeks
                 width: mainDaysCalendar.width

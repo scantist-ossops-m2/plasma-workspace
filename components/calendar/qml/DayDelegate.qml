@@ -39,7 +39,9 @@ PlasmaComponents.AbstractButton {
 
     Accessible.name: thisDate.toLocaleDateString(Qt.locale(), Locale.LongFormat)
     Accessible.description: {
-        const eventDescription = (model.eventCount !== undefined && model.eventCount > 0) ? i18ndp("plasmashellprivateplugin", "%1 event", "%1 events", model.eventCount) : i18nd("plasmashellprivateplugin", "No events");
+        const eventDescription = (model.eventCount !== undefined && model.eventCount > 0)
+            ? i18ndp("plasmashellprivateplugin", "%1 event", "%1 events", model.eventCount)
+            : i18nd("plasmashellprivateplugin", "No events");
         const subLabelDescription = model.subLabel || model.subDayLabel || "";
         return `${eventDescription} ${subLabelDescription ? `; ${subLabelDescription}` : ""}`;
     }
