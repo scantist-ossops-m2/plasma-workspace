@@ -22,6 +22,7 @@ MouseArea {
     property real brightnessError: 0
     property QtObject batteries
     property bool hasBatteries: false
+    required property bool isInhibited
     required property bool isSetToPerformanceMode
     required property bool isSetToPowerSaveMode
     required property bool isSomehowFullyCharged
@@ -67,17 +68,21 @@ MouseArea {
 
                 property real iconSize: Math.min(width, height)
 
-                // "Held on a Power Profile mode while plugged in" use case; show the
+                // "Held on a Power Profile mode or active inhibitions while plugged in" use case; show the
                 // icon of the active mode so the user can notice this at a glance
                 Kirigami.Icon {
                     id: powerProfileModeIcon
 
                     anchors.fill: parent
 
-                    visible: batteryContainer.pluggedIn && (root.isSetToPerformanceMode || root.isSetToPowerSaveMode)
-                    source: root.isSetToPerformanceMode
+                    visible: batteryContainer.pluggedIn && (root.isInhibited  || root.isSetToPerformanceMode || root.isSetToPowerSaveMode)
+                    source: root.isInhibited
+                        ? "system-suspend-inhibited"
+                        : root.isSetToPerformanceMode
                         ? "battery-profile-performance-symbolic"
-                        : "battery-profile-powersave-symbolic"
+                        : root.isSetToPowerSaveMode 
+                        ? "battery-profile-powersave-symbolic"
+                        : Plasmoid.icon
                     active: root.containsMouse
                 }
 
