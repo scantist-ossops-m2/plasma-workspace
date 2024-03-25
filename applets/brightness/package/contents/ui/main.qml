@@ -82,7 +82,20 @@ PlasmoidItem {
             if (!nightColorMonitor.running) {
                 parts.push(i18nc("Status", "Night Light off"));
             } else if (nightColorMonitor.currentTemperature != 6500) {
-                parts.push(i18nc("Status; placeholder is a temperature", "Night Light at %1K", nightColorMonitor.currentTemperature));
+                if (nightColorMonitor.currentTemperature != nightColorMonitor.targetTemperature) {
+                    const endTime = new Date(nightColorMonitor.currentTransitionEndTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                    if (nightColorMonitor.daylight) {
+                        parts.push(i18nc("Status; placeholder is a time", "Night Light in morning transition until %1", endTime));
+                    } else {
+                        parts.push(i18nc("Status; placeholder is a time", "Night Light in evening transition until %1", endTime));
+                    }
+                } else {
+                    if (nightColorMonitor.daylight) {
+                        parts.push(i18nc("Status", "Night Light at day color temperature"));
+                    } else {
+                        parts.push(i18nc("Status", "Night Light at night color temperature"));
+                    }
+                }
             }
         }
 
