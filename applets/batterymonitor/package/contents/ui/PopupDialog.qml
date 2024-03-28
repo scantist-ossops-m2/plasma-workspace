@@ -49,26 +49,6 @@ PlasmaExtras.Representation {
 
     KeyNavigation.down: pmSwitch.pmCheckBox
 
-    header: PlasmaExtras.PlasmoidHeading {
-        leftPadding: !mirrored ? Kirigami.Units.smallSpacing : 0
-        rightPadding: mirrored ? Kirigami.Units.smallSpacing : 0
-
-        contentItem: PowerManagementItem {
-            id: pmSwitch
-
-            inhibitions: dialog.inhibitions
-            manuallyInhibited: dialog.manuallyInhibited
-            inhibitsLidAction: dialog.inhibitsLidAction
-            pluggedIn: dialog.pluggedIn
-
-            onInhibitionChangeRequested: inhibit => {
-                batterymonitor.inhibitionChangeRequested(inhibit);
-            }
-
-            onDisabledChanged: dialog.powerManagementChanged(disabled)
-        }
-    }
-
     contentItem: PlasmaComponents3.ScrollView {
         id: scrollView
 
@@ -91,17 +71,24 @@ PlasmaExtras.Representation {
 
             spacing: Kirigami.Units.smallSpacing * 2
 
-            readonly property Item firstHeaderItem: {
-                if (powerProfileItem.visible) {
-                    return powerProfileItem;
+            readonly property Item firstHeaderItem: pmSwitch
+            readonly property Item lastHeaderItem: pmSwitch
+
+            PowerManagementItem {
+                id: pmSwitch
+
+                width: scrollView.availableWidth
+
+                inhibitions: dialog.inhibitions
+                manuallyInhibited: dialog.manuallyInhibited
+                inhibitsLidAction: dialog.inhibitsLidAction
+                pluggedIn: dialog.pluggedIn
+
+                onInhibitionChangeRequested: inhibit => {
+                    batterymonitor.inhibitionChangeRequested(inhibit);
                 }
-                return null;
-            }
-            readonly property Item lastHeaderItem: {
-                if (powerProfileItem.visible) {
-                    return powerProfileItem;
-                }
-                return null;
+
+                onDisabledChanged: dialog.powerManagementChanged(disabled)
             }
 
             PowerProfileItem {
