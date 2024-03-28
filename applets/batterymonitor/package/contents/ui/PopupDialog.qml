@@ -47,27 +47,7 @@ PlasmaExtras.Representation {
 
     collapseMarginsHint: true
 
-    KeyNavigation.down: pmSwitch.pmCheckBox
-
-    header: PlasmaExtras.PlasmoidHeading {
-        leftPadding: !mirrored ? Kirigami.Units.smallSpacing : 0
-        rightPadding: mirrored ? Kirigami.Units.smallSpacing : 0
-
-        contentItem: PowerManagementItem {
-            id: pmSwitch
-
-            inhibitions: dialog.inhibitions
-            manuallyInhibited: dialog.manuallyInhibited
-            inhibitsLidAction: dialog.inhibitsLidAction
-            pluggedIn: dialog.pluggedIn
-
-            onInhibitionChangeRequested: inhibit => {
-                batterymonitor.inhibitionChangeRequested(inhibit);
-            }
-
-            onDisabledChanged: dialog.powerManagementChanged(disabled)
-        }
-    }
+    KeyNavigation.down: powerManagementItem.manualInhibitionSwitch
 
     contentItem: PlasmaComponents3.ScrollView {
         id: scrollView
@@ -78,7 +58,7 @@ PlasmaExtras.Representation {
             if (!PlasmaComponents3.ScrollBar.vertical.visible) {
                 return;
             }
-            const rect = batteryList.mapFromItem(item, 0, 0, item.width, item.height);
+            const rect = powerItemList.mapFromItem(item, 0, 0, item.width, item.height);
             if (rect.y < scrollView.contentItem.contentY) {
                 scrollView.contentItem.contentY = rect.y;
             } else if (rect.y + rect.height > scrollView.contentItem.contentY + scrollView.height) {
@@ -87,21 +67,30 @@ PlasmaExtras.Representation {
         }
 
         Column {
-            id: batteryList
+            id: powerItemList
 
             spacing: Kirigami.Units.smallSpacing * 2
 
-            readonly property Item firstHeaderItem: {
-                if (powerProfileItem.visible) {
-                    return powerProfileItem;
+            PowerManagementItem {
+                id: powerManagementItem
+
+                width: scrollView.availableWidth
+
+                KeyNavigation.up: dialog.KeyNavigation.up
+                KeyNavigation.down: powerProfileItem.visible ? powerProfileItem : powerProfileItem.KeyNavigation.down
+                KeyNavigation.backtab:KeyNavigation.up
+                KeyNavigation.tab: powerManagementItem.manualInhibitionSwitch
+
+                inhibitions: dialog.inhibitions
+                manuallyInhibited: dialog.manuallyInhibited
+                inhibitsLidAction: dialog.inhibitsLidAction
+                pluggedIn: dialog.pluggedIn
+
+                onInhibitionChangeRequested: inhibit => {
+                    batterymonitor.inhibitionChangeRequested(inhibit);
                 }
-                return null;
-            }
-            readonly property Item lastHeaderItem: {
-                if (powerProfileItem.visible) {
-                    return powerProfileItem;
-                }
-                return null;
+
+                onDisabledChanged: dialog.powerManagementChanged(disabled)
             }
 
             PowerProfileItem {
@@ -109,6 +98,7 @@ PlasmaExtras.Representation {
 
                 width: scrollView.availableWidth
 
+                KeyNavigation.up: powerManagementItem
                 KeyNavigation.down: batteryRepeater.count > 0 ? batteryRepeater.itemAt(0) : null
                 KeyNavigation.backtab: KeyNavigation.up
                 KeyNavigation.tab: KeyNavigation.down
@@ -136,7 +126,7 @@ PlasmaExtras.Representation {
                     battery: model
                     remainingTime: dialog.remainingTime
 
-                    KeyNavigation.up: index === 0 ? batteryList.lastHeaderItem : batteryRepeater.itemAt(index - 1)
+                    KeyNavigation.up: index === 0 ? (powerProfileItem.visible ? powerProfileItem : powerProfileItem.KeyNavigation.up) : batteryRepeater.itemAt(index - 1)
                     KeyNavigation.down: index + 1 < batteryRepeater.count ? batteryRepeater.itemAt(index + 1) : null
                     KeyNavigation.backtab: KeyNavigation.up
                     KeyNavigation.tab: KeyNavigation.down
