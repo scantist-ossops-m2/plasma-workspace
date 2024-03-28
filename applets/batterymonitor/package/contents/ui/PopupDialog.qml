@@ -135,6 +135,7 @@ PlasmaExtras.Representation {
 
                     battery: model
                     remainingTime: dialog.remainingTime
+                    pluggedIn: dialog.pluggedIn
 
                     KeyNavigation.up: index === 0 ? batteryList.lastHeaderItem : batteryRepeater.itemAt(index - 1)
                     KeyNavigation.down: index + 1 < batteryRepeater.count ? batteryRepeater.itemAt(index + 1) : null
