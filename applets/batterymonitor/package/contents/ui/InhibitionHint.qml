@@ -13,6 +13,10 @@ import org.kde.kirigami as Kirigami
 RowLayout {
     property alias iconSource: iconItem.source
     property alias text: label.text
+    
+    property alias showToolButton: toolButton.visible
+    property alias toolButtonName: toolButton.text
+    property alias toolButtonIcon: toolButton.icon.name
 
     spacing: Kirigami.Units.smallSpacing
 
@@ -31,5 +35,15 @@ RowLayout {
         wrapMode: Text.WordWrap
         elide: Text.ElideRight
         maximumLineCount: 4
+    }
+
+    PlasmaComponents3.ToolButton {
+        id: toolButton
+        visible: false
+
+        display: PlasmaComponents3.AbstractButton.IconOnly
+        PlasmaComponents3.ToolTip {
+            text: parent.text
+        }
     }
 }

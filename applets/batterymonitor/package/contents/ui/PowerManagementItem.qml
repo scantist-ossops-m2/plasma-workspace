@@ -131,6 +131,10 @@ PlasmaComponents3.ItemDelegate {
                         property string name: modelData.Name
                         property string reason: modelData.Reason
 
+                        showToolButton: true
+                        toolButtonName: i18nc("Button to remove an application from the list of applications blocking sleep and screen locking", "Stop blocking")
+                        toolButtonIcon: "process-stop"
+
                         Layout.fillWidth: true
                         iconSource: icon
                         text: {
