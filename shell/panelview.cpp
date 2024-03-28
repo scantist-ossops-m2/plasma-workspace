@@ -1306,10 +1306,8 @@ void PanelView::updateMask()
             QRect screenPanelRect = geometry().intersected(screen()->geometry());
             screenPanelRect.moveTo(mapFromGlobal(screenPanelRect.topLeft()));
             setMask(screenPanelRect);
-            qWarning() << "AAA" << screenPanelRect << geometry() << screen()->geometry();
         } else {
             setMask(mask);
-            qWarning() << "BBB" << mask;
         }
     }
 }
