@@ -395,7 +395,7 @@ void DesktopView::showConfigurationInterface(Plasma::Applet *applet)
     m_configView->init();
     m_configView->setTransientParent(this);
     m_configView->show();
-    m_configView->requestActivate();
+    connect(this, &QObject::destroyed, m_configView, &QObject::deleteLater);
 
     auto window = qobject_cast<QWindow *>(m_configView);
     if (window && qGuiApp->nativeInterface<QNativeInterface::QX11Application>()) {
