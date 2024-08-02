@@ -20,6 +20,7 @@
 #include "notificationsengine.h"
 #include "notificationservice.h"
 #include "notificationsadaptor.h"
+#include "notificationsanitizer.h"
 
 #include <QDebug>
 #include <KConfigGroup>
@@ -201,18 +202,19 @@ uint NotificationsEngine::Notify(const QString &app_name, uint replaces_id,
     qDebug() << "Currrent active notifications:" << m_activeNotifications;
     qDebug() << "Guessing partOf as:" << partOf;
     qDebug() << " New Notification: " << summary << body << timeout << "& Part of:" << partOf;
-    QString _body;
+    QString bodyFinal = NotificationSanitizer::parse(body);
 
     if (partOf > 0) {
         const QString source = QStringLiteral("notification %1").arg(partOf);
         Plasma::DataContainer *container = containerForSource(source);
         if (container) {
             // append the body text
-            _body = container->data()[QStringLiteral("body")].toString();
-            if (_body != body) {
-                _body.append("\n").append(body);
-            } else {
-                _body = body;
+            const QString previousBody = container->data()[QStringLiteral("body")].toString();
+            if (previousBody != bodyFinal) {
+                // FIXME: This will just append the entire old XML document to another one, leading to:
+                // <?xml><html>old</html><br><?xml><html>new</html>
+                // It works but is not very clean.
+                bodyFinal = previousBody + QStringLiteral("<br/>") + bodyFinal;
             }
 
             replaces_id = partOf;
@@ -245,7 +247,7 @@ uint NotificationsEngine::Notify(const QString &app_name, uint replaces_id,
 
     const int AVERAGE_WORD_LENGTH = 6;
     const int WORD_PER_MINUTE = 250;
-    int count = summary.length() + body.length();
+    int count = summary.length() + body.length() - strlen("<?xml version=\"1.0\"><html></html>");
 
     // -1 is "server default", 0 is persistent with "server default" display time,
     // anything more should honor the setting
@@ -259,25 +261,6 @@ uint NotificationsEngine::Notify(const QString &app_name, uint replaces_id,
     }
 
     const QString source = QStringLiteral("notification %1").arg(id);
-
-    QString bodyFinal = (partOf == 0 ? body : _body);
-    // First trim whitespace from beginning and end
-    bodyFinal = bodyFinal.trimmed();
-    // Now replace all \ns with <br/>
-    bodyFinal = bodyFinal.replace(QLatin1String("\n"), QLatin1String("<br/>"));
-    // Now remove all inner whitespace (\ns are already <br/>s
-    bodyFinal = bodyFinal.simplified();
-    // Finally, check if we don't have multiple <br/>s following,
-    // can happen for example when "\n       \n" is sent, this replaces
-    // all <br/>s in succsession with just one
-    bodyFinal.replace(QRegularExpression(QStringLiteral("<br/>\\s*<br/>(\\s|<br/>)*")), QLatin1String("<br/>"));
-    // This fancy RegExp escapes every occurence of & since QtQuick Text will blatantly cut off
-    // text where it finds a stray ampersand.
-    // Only &{apos, quot, gt, lt, amp}; as well as &#123 character references will be allowed
-    bodyFinal.replace(QRegularExpression(QStringLiteral("&(?!(?:apos|quot|[gl]t|amp);|#)")), QLatin1String("&amp;"));
-    // The Text.StyledText format handles only html3.2 stuff and &apos; is html4 stuff
-    // so we need to replace it here otherwise it will not render at all.
-    bodyFinal.replace(QLatin1String("&apos;"), QChar('\''));
 
     Plasma::DataEngine::Data notificationData;
     notificationData.insert(QStringLiteral("id"), QString::number(id));
